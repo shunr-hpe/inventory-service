@@ -13,6 +13,11 @@
 //
 // This file registers routes for all resource types:
 //   - /components (Component operations)
+//   - /componentendpoints (ComponentEndpoint operations)
+//   - /ethernetinterfaces (EthernetInterface operations)
+//   - /groups (Group operations)
+//   - /redfishendpoints (RedfishEndpoint operations)
+//   - /serviceendpoints (ServiceEndpoint operations)
 //
 // Route patterns:
 //   - GET    /resource              -> List all resources
@@ -35,7 +40,27 @@ package main
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/openchami/fabrica/pkg/resource"
 )
+
+// registerResourcePrefixes registers UID prefixes for all resource types
+// This must be called before any resource creation operations
+func registerResourcePrefixes() error {
+
+	resource.RegisterResourcePrefix("Component", "component")
+
+	resource.RegisterResourcePrefix("ComponentEndpoint", "componentendpoint")
+
+	resource.RegisterResourcePrefix("EthernetInterface", "ethernetinterface")
+
+	resource.RegisterResourcePrefix("Group", "group")
+
+	resource.RegisterResourcePrefix("RedfishEndpoint", "redfishendpoint")
+
+	resource.RegisterResourcePrefix("ServiceEndpoint", "serviceendpoint")
+
+	return nil
+}
 
 // RegisterGeneratedRoutes registers all generated routes
 // Note: Middleware should be applied in main.go before calling this function
@@ -55,6 +80,96 @@ func RegisterGeneratedRoutes(r chi.Router) {
 			r.Route("/status", func(r chi.Router) {
 				r.Put("/", UpdateComponentStatus)
 				r.Patch("/", PatchComponentStatus)
+			})
+		})
+	})
+
+	// ComponentEndpoint routes
+	r.Route("/componentendpoints", func(r chi.Router) {
+		r.Get("/", GetComponentEndpoints)
+		r.Post("/", CreateComponentEndpoint)
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", GetComponentEndpoint)
+			r.Put("/", UpdateComponentEndpoint)
+			r.Patch("/", PatchComponentEndpoint)
+			r.Delete("/", DeleteComponentEndpoint)
+
+			// Status subresource
+			r.Route("/status", func(r chi.Router) {
+				r.Put("/", UpdateComponentEndpointStatus)
+				r.Patch("/", PatchComponentEndpointStatus)
+			})
+		})
+	})
+
+	// EthernetInterface routes
+	r.Route("/ethernetinterfaces", func(r chi.Router) {
+		r.Get("/", GetEthernetInterfaces)
+		r.Post("/", CreateEthernetInterface)
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", GetEthernetInterface)
+			r.Put("/", UpdateEthernetInterface)
+			r.Patch("/", PatchEthernetInterface)
+			r.Delete("/", DeleteEthernetInterface)
+
+			// Status subresource
+			r.Route("/status", func(r chi.Router) {
+				r.Put("/", UpdateEthernetInterfaceStatus)
+				r.Patch("/", PatchEthernetInterfaceStatus)
+			})
+		})
+	})
+
+	// Group routes
+	r.Route("/groups", func(r chi.Router) {
+		r.Get("/", GetGroups)
+		r.Post("/", CreateGroup)
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", GetGroup)
+			r.Put("/", UpdateGroup)
+			r.Patch("/", PatchGroup)
+			r.Delete("/", DeleteGroup)
+
+			// Status subresource
+			r.Route("/status", func(r chi.Router) {
+				r.Put("/", UpdateGroupStatus)
+				r.Patch("/", PatchGroupStatus)
+			})
+		})
+	})
+
+	// RedfishEndpoint routes
+	r.Route("/redfishendpoints", func(r chi.Router) {
+		r.Get("/", GetRedfishEndpoints)
+		r.Post("/", CreateRedfishEndpoint)
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", GetRedfishEndpoint)
+			r.Put("/", UpdateRedfishEndpoint)
+			r.Patch("/", PatchRedfishEndpoint)
+			r.Delete("/", DeleteRedfishEndpoint)
+
+			// Status subresource
+			r.Route("/status", func(r chi.Router) {
+				r.Put("/", UpdateRedfishEndpointStatus)
+				r.Patch("/", PatchRedfishEndpointStatus)
+			})
+		})
+	})
+
+	// ServiceEndpoint routes
+	r.Route("/serviceendpoints", func(r chi.Router) {
+		r.Get("/", GetServiceEndpoints)
+		r.Post("/", CreateServiceEndpoint)
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", GetServiceEndpoint)
+			r.Put("/", UpdateServiceEndpoint)
+			r.Patch("/", PatchServiceEndpoint)
+			r.Delete("/", DeleteServiceEndpoint)
+
+			// Status subresource
+			r.Route("/status", func(r chi.Router) {
+				r.Put("/", UpdateServiceEndpointStatus)
+				r.Patch("/", PatchServiceEndpointStatus)
 			})
 		})
 	})

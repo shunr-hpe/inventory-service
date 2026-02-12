@@ -1,12 +1,12 @@
-// Copyright © 2025 OpenCHAMI a Series of LF Projects, LLC
+// Copyright © 2025-2026 OpenCHAMI a Series of LF Projects, LLC
 //
 // SPDX-License-Identifier: MIT
 package main
 
 import (
-	"github.com/user/smd2/pkg/resources/component"
+	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
 )
 
 type ComponentArray struct {
-	Components []*component.ComponentSpec `json:"Components"`
+	Components []*v1.ComponentSpec `json:"Components"`
 }

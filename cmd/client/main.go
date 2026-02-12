@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT
 //
-// This file provides a Cobra-based CLI for the smd_gen API.
+// This file provides a Cobra-based CLI for the smd2 API.
 // Generated from: pkg/codegen/templates/client-cmd.go.tmpl
 //
 // To modify the CLI:
@@ -13,19 +13,24 @@
 //
 // Generated commands for each resource:
 //   - client component [list|get|create|update|patch|delete]
+//   - client componentendpoint [list|get|create|update|patch|delete]
+//   - client ethernetinterface [list|get|create|update|patch|delete]
+//   - client group [list|get|create|update|patch|delete]
+//   - client redfishendpoint [list|get|create|update|patch|delete]
+//   - client serviceendpoint [list|get|create|update|patch|delete]
 //
 // Global flags (available for all commands):
 //
-//	--server       Server URL (env: SMD_GEN_SERVER)
-//	--timeout      Request timeout (env: SMD_GEN_TIMEOUT)
-//	--output, -o   Output format: table, json, yaml (env: SMD_GEN_OUTPUT)
-//	--version, -v  API version to request: v1, v2beta1, etc. (env: SMD_GEN_VERSION)
-//	--config       Config file path (default: ~/.smd_gen-cli.yaml)
+//	--server       Server URL (env: SMD2_SERVER)
+//	--timeout      Request timeout (env: SMD2_TIMEOUT)
+//	--output, -o   Output format: table, json, yaml (env: SMD2_OUTPUT)
+//	--version, -v  API version to request: v1, v2beta1, etc. (env: SMD2_VERSION)
+//	--config       Config file path (default: ~/.smd2-cli.yaml)
 //
 // Configuration sources (in order of precedence):
 //  1. Command-line flags
-//  2. Environment variables (SMD_GEN_*)
-//  3. Config file (~/.smd_gen-cli.yaml)
+//  2. Environment variables (SMD2_*)
+//  3. Config file (~/.smd2-cli.yaml)
 //  4. Default values
 //
 // Usage examples:
@@ -46,8 +51,8 @@
 //	client component create --spec '{"name":"component-01","description":"Example Component"}'
 //
 //	# Use environment variables
-//	export SMD_GEN_SERVER=https://smd_gen.example.com
-//	export SMD_GEN_VERSION=v2beta1
+//	export SMD2_SERVER=https://smd2.example.com
+//	export SMD2_VERSION=v2beta1
 //	client component list
 //
 // To add custom commands:
@@ -73,9 +78,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/OpenCHAMI/smd2/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/user/smd2/pkg/client"
 )
 
 var (
@@ -95,16 +100,16 @@ func main() {
 
 var rootCmd = &cobra.Command{
 	Use:   filepath.Base(os.Args[0]),
-	Short: "smd_gen CLI",
-	Long:  `A command-line interface for managing smd_gen resources.`,
+	Short: "smd2 CLI",
+	Long:  `A command-line interface for managing smd2 resources.`,
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.smd_gen-cli.yaml)")
-	rootCmd.PersistentFlags().StringVar(&serverURL, "server", "http://localhost:8080", "smd_gen server URL")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.smd2-cli.yaml)")
+	rootCmd.PersistentFlags().StringVar(&serverURL, "server", "http://localhost:8080", "smd2 server URL")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", 30*time.Second, "request timeout")
 	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "output format: table, json, yaml")
 	rootCmd.PersistentFlags().StringVarP(&apiVersion, "version", "v", "", "API version to request (e.g., v1, v2beta1)")
@@ -116,11 +121,16 @@ func init() {
 	viper.BindPFlag("version", rootCmd.PersistentFlags().Lookup("version"))
 
 	// Environment variable support
-	viper.SetEnvPrefix("SMD_GEN")
+	viper.SetEnvPrefix("SMD2")
 	viper.AutomaticEnv()
 
 	// Add resource commands
 	rootCmd.AddCommand(componentCmd)
+	rootCmd.AddCommand(componentendpointCmd)
+	rootCmd.AddCommand(ethernetinterfaceCmd)
+	rootCmd.AddCommand(groupCmd)
+	rootCmd.AddCommand(redfishendpointCmd)
+	rootCmd.AddCommand(serviceendpointCmd)
 
 }
 
@@ -136,7 +146,7 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".smd_gen-cli")
+		viper.SetConfigName(".smd2-cli")
 	}
 
 	if err := viper.ReadInConfig(); err == nil {
@@ -274,13 +284,14 @@ var componentCreateCmd = &cobra.Command{
 
 Examples:
   # Create from stdin
-  echo '{"description": "Example description", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}' | client component create
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}' | client component create
 
   # Create with --spec flag
-  client component create --spec '{"description": "Example description", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}'
+  client component create --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}'
 
 Spec fields:
   description (string)
+  ID (string)
   Type (string)
   State (string)
   Flag (string)
@@ -338,13 +349,14 @@ var componentUpdateCmd = &cobra.Command{
 
 Examples:
   # Update from stdin
-  echo '{"description": "Example description", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}' | client component update <uid>
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}' | client component update <uid>
 
   # Update with --spec flag
-  client component update <uid> --spec '{"description": "Example description", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}'
+  client component update <uid> --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "State": "example-value", "Flag": "example-value", "Enabled": {}, "SoftwareStatus": "example-value", "Role": "example-value", "SubRole": "example-value", "NID": "example-value", "Subtype": "example-value", "NetType": "example-value", "Arch": "example-value", "Class": "example-value", "ReservationDisabled": true, "Locked": true}'
 
 Spec fields:
   description (string)
+  ID (string)
   Type (string)
   State (string)
   Flag (string)
@@ -577,4 +589,1790 @@ func init() {
 	componentPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
 	componentPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
 	componentPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// ComponentEndpoint commands
+var componentendpointCmd = &cobra.Command{
+	Use:   "componentendpoint",
+	Short: "Manage componentendpoints",
+	Long:  `Create, read, update, patch, and delete componentendpoints.`,
+}
+
+var componentendpointListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all componentendpoints",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetComponentEndpoints(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list componentendpoints: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var componentendpointGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a ComponentEndpoint by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetComponentEndpoint(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get ComponentEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var componentendpointCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new ComponentEndpoint",
+	Long: `Create a new ComponentEndpoint.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "RedfishEndpointFQDN": "example-value", "URL": "https://example.com", "ComponentEndpointType": "example-value", "RedfishChassisInfo": "{}", "RedfishSystemInfo": "{}", "RedfishManagerInfo": "{}", "RedfishPDUInfo": "{}", "RedfishOutletInfo": {}}' | client componentendpoint create
+
+  # Create with --spec flag
+  client componentendpoint create --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "RedfishEndpointFQDN": "example-value", "URL": "https://example.com", "ComponentEndpointType": "example-value", "RedfishChassisInfo": "{}", "RedfishSystemInfo": "{}", "RedfishManagerInfo": "{}", "RedfishPDUInfo": "{}", "RedfishOutletInfo": {}}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  RedfishEndpointFQDN (string)
+  URL (string)
+  ComponentEndpointType (string)
+  RedfishChassisInfo (*v1.ComponentChassisInfo)
+  RedfishSystemInfo (*v1.ComponentSystemInfo)
+  RedfishManagerInfo (*v1.ComponentManagerInfo)
+  RedfishPDUInfo (*v1.ComponentPDUInfo)
+  RedfishOutletInfo (interface {})
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateComponentEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateComponentEndpoint(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create ComponentEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var componentendpointUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing ComponentEndpoint",
+	Long: `Update an existing ComponentEndpoint.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "RedfishEndpointFQDN": "example-value", "URL": "https://example.com", "ComponentEndpointType": "example-value", "RedfishChassisInfo": "{}", "RedfishSystemInfo": "{}", "RedfishManagerInfo": "{}", "RedfishPDUInfo": "{}", "RedfishOutletInfo": {}}' | client componentendpoint update <uid>
+
+  # Update with --spec flag
+  client componentendpoint update <uid> --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "RedfishEndpointFQDN": "example-value", "URL": "https://example.com", "ComponentEndpointType": "example-value", "RedfishChassisInfo": "{}", "RedfishSystemInfo": "{}", "RedfishManagerInfo": "{}", "RedfishPDUInfo": "{}", "RedfishOutletInfo": {}}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  RedfishEndpointFQDN (string)
+  URL (string)
+  ComponentEndpointType (string)
+  RedfishChassisInfo (*v1.ComponentChassisInfo)
+  RedfishSystemInfo (*v1.ComponentSystemInfo)
+  RedfishManagerInfo (*v1.ComponentManagerInfo)
+  RedfishPDUInfo (*v1.ComponentPDUInfo)
+  RedfishOutletInfo (interface {})
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateComponentEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateComponentEndpoint(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update ComponentEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var componentendpointPatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a ComponentEndpoint",
+	Long: `Patch an existing ComponentEndpoint spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client componentendpoint patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client componentendpoint patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client componentendpoint patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client componentendpoint patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchComponentEndpoint(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch ComponentEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var componentendpointDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a ComponentEndpoint",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteComponentEndpoint(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete ComponentEndpoint: %w", err)
+		}
+
+		fmt.Printf("ComponentEndpoint %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	componentendpointCmd.AddCommand(componentendpointListCmd)
+	componentendpointCmd.AddCommand(componentendpointGetCmd)
+	componentendpointCmd.AddCommand(componentendpointCreateCmd)
+	componentendpointCmd.AddCommand(componentendpointUpdateCmd)
+	componentendpointCmd.AddCommand(componentendpointPatchCmd)
+	componentendpointCmd.AddCommand(componentendpointDeleteCmd)
+
+	// Add spec flag for create and update commands
+	componentendpointCreateCmd.Flags().String("spec", "", "ComponentEndpoint specification in JSON format")
+	componentendpointUpdateCmd.Flags().String("spec", "", "ComponentEndpoint specification in JSON format")
+
+	// Add patch command flags
+	componentendpointPatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	componentendpointPatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	componentendpointPatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	componentendpointPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	componentendpointPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	componentendpointPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// EthernetInterface commands
+var ethernetinterfaceCmd = &cobra.Command{
+	Use:   "ethernetinterface",
+	Short: "Manage ethernetinterfaces",
+	Long:  `Create, read, update, patch, and delete ethernetinterfaces.`,
+}
+
+var ethernetinterfaceListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all ethernetinterfaces",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetEthernetInterfaces(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list ethernetinterfaces: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var ethernetinterfaceGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a EthernetInterface by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetEthernetInterface(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get EthernetInterface: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var ethernetinterfaceCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new EthernetInterface",
+	Long: `Create a new EthernetInterface.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "@odata.context": "example-value", "@odata.id": "example-value", "@odata.type": "example-value", "AutoNeg": {}, "FQDN": "example-value", "FullDuplex": {}, "HostName": "example-name", "Id": "example-value", "IPv4Addresses": ["[]"], "IPv6Addresses": ["[]"], "IPv6StaticAddresses": ["[]"], "IPv6DefaultGateway": "192.168.1.1", "InterfaceEnabled": {}, "MACAddress": "192.168.1.1", "PermanentMACAddress": "192.168.1.1", "MTUSize": "example-value", "MaxIPv6StaticAddresses": "192.168.1.1", "Name": "example-name", "NameServers": ["["item1","item2"]"], "SpeedMbps": "example-value", "Status": "{}", "UefiDevicePath": "example-value", "VLAN": "{}"}' | client ethernetinterface create
+
+  # Create with --spec flag
+  client ethernetinterface create --spec '{"description": "Example description", "@odata.context": "example-value", "@odata.id": "example-value", "@odata.type": "example-value", "AutoNeg": {}, "FQDN": "example-value", "FullDuplex": {}, "HostName": "example-name", "Id": "example-value", "IPv4Addresses": ["[]"], "IPv6Addresses": ["[]"], "IPv6StaticAddresses": ["[]"], "IPv6DefaultGateway": "192.168.1.1", "InterfaceEnabled": {}, "MACAddress": "192.168.1.1", "PermanentMACAddress": "192.168.1.1", "MTUSize": "example-value", "MaxIPv6StaticAddresses": "192.168.1.1", "Name": "example-name", "NameServers": ["["item1","item2"]"], "SpeedMbps": "example-value", "Status": "{}", "UefiDevicePath": "example-value", "VLAN": "{}"}'
+
+Spec fields:
+  description (string)
+  @odata.context (string)
+  @odata.id (string)
+  @odata.type (string)
+  AutoNeg (*bool)
+  FQDN (string)
+  FullDuplex (*bool)
+  HostName (string)
+  Id (string)
+  IPv4Addresses ([]v1.IPv4Address)
+  IPv6Addresses ([]v1.IPv6Address)
+  IPv6StaticAddresses ([]v1.IPv6StaticAddress)
+  IPv6DefaultGateway (string)
+  InterfaceEnabled (*bool)
+  MACAddress (string)
+  PermanentMACAddress (string)
+  MTUSize (json.Number)
+  MaxIPv6StaticAddresses (json.Number)
+  Name (string)
+  NameServers ([]string)
+  SpeedMbps (json.Number)
+  Status (v1.StatusRF)
+  UefiDevicePath (string)
+  VLAN (v1.VLAN)
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateEthernetInterfaceRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateEthernetInterface(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create EthernetInterface: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var ethernetinterfaceUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing EthernetInterface",
+	Long: `Update an existing EthernetInterface.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "@odata.context": "example-value", "@odata.id": "example-value", "@odata.type": "example-value", "AutoNeg": {}, "FQDN": "example-value", "FullDuplex": {}, "HostName": "example-name", "Id": "example-value", "IPv4Addresses": ["[]"], "IPv6Addresses": ["[]"], "IPv6StaticAddresses": ["[]"], "IPv6DefaultGateway": "192.168.1.1", "InterfaceEnabled": {}, "MACAddress": "192.168.1.1", "PermanentMACAddress": "192.168.1.1", "MTUSize": "example-value", "MaxIPv6StaticAddresses": "192.168.1.1", "Name": "example-name", "NameServers": ["["item1","item2"]"], "SpeedMbps": "example-value", "Status": "{}", "UefiDevicePath": "example-value", "VLAN": "{}"}' | client ethernetinterface update <uid>
+
+  # Update with --spec flag
+  client ethernetinterface update <uid> --spec '{"description": "Example description", "@odata.context": "example-value", "@odata.id": "example-value", "@odata.type": "example-value", "AutoNeg": {}, "FQDN": "example-value", "FullDuplex": {}, "HostName": "example-name", "Id": "example-value", "IPv4Addresses": ["[]"], "IPv6Addresses": ["[]"], "IPv6StaticAddresses": ["[]"], "IPv6DefaultGateway": "192.168.1.1", "InterfaceEnabled": {}, "MACAddress": "192.168.1.1", "PermanentMACAddress": "192.168.1.1", "MTUSize": "example-value", "MaxIPv6StaticAddresses": "192.168.1.1", "Name": "example-name", "NameServers": ["["item1","item2"]"], "SpeedMbps": "example-value", "Status": "{}", "UefiDevicePath": "example-value", "VLAN": "{}"}'
+
+Spec fields:
+  description (string)
+  @odata.context (string)
+  @odata.id (string)
+  @odata.type (string)
+  AutoNeg (*bool)
+  FQDN (string)
+  FullDuplex (*bool)
+  HostName (string)
+  Id (string)
+  IPv4Addresses ([]v1.IPv4Address)
+  IPv6Addresses ([]v1.IPv6Address)
+  IPv6StaticAddresses ([]v1.IPv6StaticAddress)
+  IPv6DefaultGateway (string)
+  InterfaceEnabled (*bool)
+  MACAddress (string)
+  PermanentMACAddress (string)
+  MTUSize (json.Number)
+  MaxIPv6StaticAddresses (json.Number)
+  Name (string)
+  NameServers ([]string)
+  SpeedMbps (json.Number)
+  Status (v1.StatusRF)
+  UefiDevicePath (string)
+  VLAN (v1.VLAN)
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateEthernetInterfaceRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateEthernetInterface(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update EthernetInterface: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var ethernetinterfacePatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a EthernetInterface",
+	Long: `Patch an existing EthernetInterface spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client ethernetinterface patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client ethernetinterface patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client ethernetinterface patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client ethernetinterface patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchEthernetInterface(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch EthernetInterface: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var ethernetinterfaceDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a EthernetInterface",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteEthernetInterface(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete EthernetInterface: %w", err)
+		}
+
+		fmt.Printf("EthernetInterface %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	ethernetinterfaceCmd.AddCommand(ethernetinterfaceListCmd)
+	ethernetinterfaceCmd.AddCommand(ethernetinterfaceGetCmd)
+	ethernetinterfaceCmd.AddCommand(ethernetinterfaceCreateCmd)
+	ethernetinterfaceCmd.AddCommand(ethernetinterfaceUpdateCmd)
+	ethernetinterfaceCmd.AddCommand(ethernetinterfacePatchCmd)
+	ethernetinterfaceCmd.AddCommand(ethernetinterfaceDeleteCmd)
+
+	// Add spec flag for create and update commands
+	ethernetinterfaceCreateCmd.Flags().String("spec", "", "EthernetInterface specification in JSON format")
+	ethernetinterfaceUpdateCmd.Flags().String("spec", "", "EthernetInterface specification in JSON format")
+
+	// Add patch command flags
+	ethernetinterfacePatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	ethernetinterfacePatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	ethernetinterfacePatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	ethernetinterfacePatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	ethernetinterfacePatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	ethernetinterfacePatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// Group commands
+var groupCmd = &cobra.Command{
+	Use:   "group",
+	Short: "Manage groups",
+	Long:  `Create, read, update, patch, and delete groups.`,
+}
+
+var groupListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all groups",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list groups: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var groupGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a Group by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetGroup(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get Group: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var groupCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new Group",
+	Long: `Create a new Group.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "label": "example-value", "exclusiveGroup": "example-value", "tags": ["["item1","item2"]"], "members": "{}"}' | client group create
+
+  # Create with --spec flag
+  client group create --spec '{"description": "Example description", "label": "example-value", "exclusiveGroup": "example-value", "tags": ["["item1","item2"]"], "members": "{}"}'
+
+Spec fields:
+  description (string)
+  label (string)
+  exclusiveGroup (string)
+  tags ([]string)
+  members (v1.Members)
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateGroupRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateGroup(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create Group: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var groupUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing Group",
+	Long: `Update an existing Group.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "label": "example-value", "exclusiveGroup": "example-value", "tags": ["["item1","item2"]"], "members": "{}"}' | client group update <uid>
+
+  # Update with --spec flag
+  client group update <uid> --spec '{"description": "Example description", "label": "example-value", "exclusiveGroup": "example-value", "tags": ["["item1","item2"]"], "members": "{}"}'
+
+Spec fields:
+  description (string)
+  label (string)
+  exclusiveGroup (string)
+  tags ([]string)
+  members (v1.Members)
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateGroupRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateGroup(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update Group: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var groupPatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a Group",
+	Long: `Patch an existing Group spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client group patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client group patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client group patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client group patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchGroup(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch Group: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var groupDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a Group",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteGroup(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete Group: %w", err)
+		}
+
+		fmt.Printf("Group %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	groupCmd.AddCommand(groupListCmd)
+	groupCmd.AddCommand(groupGetCmd)
+	groupCmd.AddCommand(groupCreateCmd)
+	groupCmd.AddCommand(groupUpdateCmd)
+	groupCmd.AddCommand(groupPatchCmd)
+	groupCmd.AddCommand(groupDeleteCmd)
+
+	// Add spec flag for create and update commands
+	groupCreateCmd.Flags().String("spec", "", "Group specification in JSON format")
+	groupUpdateCmd.Flags().String("spec", "", "Group specification in JSON format")
+
+	// Add patch command flags
+	groupPatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	groupPatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	groupPatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	groupPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	groupPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	groupPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// RedfishEndpoint commands
+var redfishendpointCmd = &cobra.Command{
+	Use:   "redfishendpoint",
+	Short: "Manage redfishendpoints",
+	Long:  `Create, read, update, patch, and delete redfishendpoints.`,
+}
+
+var redfishendpointListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all redfishendpoints",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetRedfishEndpoints(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list redfishendpoints: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var redfishendpointGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a RedfishEndpoint by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetRedfishEndpoint(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get RedfishEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var redfishendpointCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new RedfishEndpoint",
+	Long: `Create a new RedfishEndpoint.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Name": "example-name", "Hostname": "example-name", "Domain": "example-value", "FQDN": "example-value", "Enabled": true, "UUID": "example-value", "User": "example-value", "Password": "example-value", "UseSSDP": true, "MACRequired": true, "MACAddr": "example-value", "IPAddress": "192.168.1.1", "RediscoverOnUpdate": true, "TemplateID": "example-value", "DiscoveryInfo": "{}"}' | client redfishendpoint create
+
+  # Create with --spec flag
+  client redfishendpoint create --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Name": "example-name", "Hostname": "example-name", "Domain": "example-value", "FQDN": "example-value", "Enabled": true, "UUID": "example-value", "User": "example-value", "Password": "example-value", "UseSSDP": true, "MACRequired": true, "MACAddr": "example-value", "IPAddress": "192.168.1.1", "RediscoverOnUpdate": true, "TemplateID": "example-value", "DiscoveryInfo": "{}"}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  Name (string)
+  Hostname (string)
+  Domain (string)
+  FQDN (string)
+  Enabled (bool)
+  UUID (string)
+  User (string)
+  Password (string)
+  UseSSDP (bool)
+  MACRequired (bool)
+  MACAddr (string)
+  IPAddress (string)
+  RediscoverOnUpdate (bool)
+  TemplateID (string)
+  DiscoveryInfo (v1.DiscoveryInfo)
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateRedfishEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateRedfishEndpoint(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create RedfishEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var redfishendpointUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing RedfishEndpoint",
+	Long: `Update an existing RedfishEndpoint.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Name": "example-name", "Hostname": "example-name", "Domain": "example-value", "FQDN": "example-value", "Enabled": true, "UUID": "example-value", "User": "example-value", "Password": "example-value", "UseSSDP": true, "MACRequired": true, "MACAddr": "example-value", "IPAddress": "192.168.1.1", "RediscoverOnUpdate": true, "TemplateID": "example-value", "DiscoveryInfo": "{}"}' | client redfishendpoint update <uid>
+
+  # Update with --spec flag
+  client redfishendpoint update <uid> --spec '{"description": "Example description", "ID": "example-value", "Type": "example-value", "Name": "example-name", "Hostname": "example-name", "Domain": "example-value", "FQDN": "example-value", "Enabled": true, "UUID": "example-value", "User": "example-value", "Password": "example-value", "UseSSDP": true, "MACRequired": true, "MACAddr": "example-value", "IPAddress": "192.168.1.1", "RediscoverOnUpdate": true, "TemplateID": "example-value", "DiscoveryInfo": "{}"}'
+
+Spec fields:
+  description (string)
+  ID (string)
+  Type (string)
+  Name (string)
+  Hostname (string)
+  Domain (string)
+  FQDN (string)
+  Enabled (bool)
+  UUID (string)
+  User (string)
+  Password (string)
+  UseSSDP (bool)
+  MACRequired (bool)
+  MACAddr (string)
+  IPAddress (string)
+  RediscoverOnUpdate (bool)
+  TemplateID (string)
+  DiscoveryInfo (v1.DiscoveryInfo)
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateRedfishEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateRedfishEndpoint(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update RedfishEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var redfishendpointPatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a RedfishEndpoint",
+	Long: `Patch an existing RedfishEndpoint spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client redfishendpoint patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client redfishendpoint patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client redfishendpoint patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client redfishendpoint patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchRedfishEndpoint(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch RedfishEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var redfishendpointDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a RedfishEndpoint",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteRedfishEndpoint(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete RedfishEndpoint: %w", err)
+		}
+
+		fmt.Printf("RedfishEndpoint %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	redfishendpointCmd.AddCommand(redfishendpointListCmd)
+	redfishendpointCmd.AddCommand(redfishendpointGetCmd)
+	redfishendpointCmd.AddCommand(redfishendpointCreateCmd)
+	redfishendpointCmd.AddCommand(redfishendpointUpdateCmd)
+	redfishendpointCmd.AddCommand(redfishendpointPatchCmd)
+	redfishendpointCmd.AddCommand(redfishendpointDeleteCmd)
+
+	// Add spec flag for create and update commands
+	redfishendpointCreateCmd.Flags().String("spec", "", "RedfishEndpoint specification in JSON format")
+	redfishendpointUpdateCmd.Flags().String("spec", "", "RedfishEndpoint specification in JSON format")
+
+	// Add patch command flags
+	redfishendpointPatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	redfishendpointPatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	redfishendpointPatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	redfishendpointPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	redfishendpointPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	redfishendpointPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
+}
+
+// ServiceEndpoint commands
+var serviceendpointCmd = &cobra.Command{
+	Use:   "serviceendpoint",
+	Short: "Manage serviceendpoints",
+	Long:  `Create, read, update, patch, and delete serviceendpoints.`,
+}
+
+var serviceendpointListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all serviceendpoints",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := c.GetServiceEndpoints(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list serviceendpoints: %w", err)
+		}
+
+		return printOutput(items)
+	},
+}
+
+var serviceendpointGetCmd = &cobra.Command{
+	Use:   "get [uid]",
+	Short: "Get a ServiceEndpoint by UID",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.GetServiceEndpoint(ctx, args[0])
+		if err != nil {
+			return fmt.Errorf("failed to get ServiceEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var serviceendpointCreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create a new ServiceEndpoint",
+	Long: `Create a new ServiceEndpoint.
+
+Examples:
+  # Create from stdin
+  echo '{"description": "Example description", "ServiceDescription": "{}", "RedfishEndpointFQDN": "example-value", "RedfishURL": "https://example.com", "ServiceInfo": "[]"}' | client serviceendpoint create
+
+  # Create with --spec flag
+  client serviceendpoint create --spec '{"description": "Example description", "ServiceDescription": "{}", "RedfishEndpointFQDN": "example-value", "RedfishURL": "https://example.com", "ServiceInfo": "[]"}'
+
+Spec fields:
+  description (string)
+  ServiceDescription (v1.ServiceDescription)
+  RedfishEndpointFQDN (string)
+  RedfishURL (string)
+  ServiceInfo (json.RawMessage)
+`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.CreateServiceEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.CreateServiceEndpoint(ctx, req)
+		if err != nil {
+			return fmt.Errorf("failed to create ServiceEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var serviceendpointUpdateCmd = &cobra.Command{
+	Use:   "update [uid]",
+	Short: "Update an existing ServiceEndpoint",
+	Long: `Update an existing ServiceEndpoint.
+
+Examples:
+  # Update from stdin
+  echo '{"description": "Example description", "ServiceDescription": "{}", "RedfishEndpointFQDN": "example-value", "RedfishURL": "https://example.com", "ServiceInfo": "[]"}' | client serviceendpoint update <uid>
+
+  # Update with --spec flag
+  client serviceendpoint update <uid> --spec '{"description": "Example description", "ServiceDescription": "{}", "RedfishEndpointFQDN": "example-value", "RedfishURL": "https://example.com", "ServiceInfo": "[]"}'
+
+Spec fields:
+  description (string)
+  ServiceDescription (v1.ServiceDescription)
+  RedfishEndpointFQDN (string)
+  RedfishURL (string)
+  ServiceInfo (json.RawMessage)
+`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		// Read request from flags or stdin
+		reqJSON, _ := cmd.Flags().GetString("spec")
+		var req client.UpdateServiceEndpointRequest
+
+		if reqJSON == "" {
+			// Read from stdin if no spec provided
+			decoder := json.NewDecoder(os.Stdin)
+			if err := decoder.Decode(&req); err != nil {
+				return fmt.Errorf("failed to decode request from stdin: %w", err)
+			}
+		} else {
+			// Parse request from JSON string
+			if err := json.Unmarshal([]byte(reqJSON), &req); err != nil {
+				return fmt.Errorf("failed to parse request JSON: %w", err)
+			}
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.UpdateServiceEndpoint(ctx, args[0], req)
+		if err != nil {
+			return fmt.Errorf("failed to update ServiceEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var serviceendpointPatchCmd = &cobra.Command{
+	Use:   "patch [uid]",
+	Short: "Patch a ServiceEndpoint",
+	Long: `Patch an existing ServiceEndpoint spec using various patch formats.
+
+IMPORTANT: Only the spec portion of the resource can be patched.
+Metadata (name, labels, annotations) and status are managed by the API.
+
+Examples:
+  # JSON Merge Patch (simple merge) - patch spec fields
+  client serviceendpoint patch <uid> --spec '{"manufacturer":"Intel","model":"Updated Model"}'
+
+  # Shorthand patch (dot notation - most convenient)
+  client serviceendpoint patch <uid> --set manufacturer=Intel --set model="Updated Model" --unset customField
+
+  # JSON Patch (RFC 6902 - most powerful)
+  client serviceendpoint patch <uid> --json-patch '[
+    {"op":"replace","path":"/manufacturer","value":"Intel"},
+    {"op":"add","path":"/properties/newField","value":"newValue"}
+  ]'
+
+  # From stdin (JSON Merge Patch format)
+  echo '{"manufacturer":"AMD","partNumber":"RYZEN-9000"}' | client serviceendpoint patch <uid>
+
+Patch Formats:
+  --spec        JSON Merge Patch (RFC 7386) - simple object merge
+  --set/--unset Shorthand patch - dot notation for convenience
+  --json-patch  JSON Patch (RFC 6902) - operation-based patches
+  stdin         JSON Merge Patch format
+
+Shorthand Operations (spec fields only):
+  --set field=value     Set a spec field value (supports dot notation)
+  --unset field         Remove a spec field (supports dot notation)
+  --add field=value     Add to spec array field (field must end with '.-')
+  --remove field=value  Remove from spec array field
+
+Note: All patch operations target the resource spec only.
+Attempts to patch metadata or status fields will be ignored.`,
+	Args: cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		uid := args[0]
+
+		// Get patch flags
+		specPatch, _ := cmd.Flags().GetString("spec")
+		jsonPatch, _ := cmd.Flags().GetString("json-patch")
+		setPairs, _ := cmd.Flags().GetStringArray("set")
+		unsetFields, _ := cmd.Flags().GetStringArray("unset")
+		addPairs, _ := cmd.Flags().GetStringArray("add")
+		removePairs, _ := cmd.Flags().GetStringArray("remove")
+
+		var patchData []byte
+		var contentType string
+
+		// Determine patch format and build patch data
+		if jsonPatch != "" {
+			// JSON Patch (RFC 6902)
+			patchData = []byte(jsonPatch)
+			contentType = "application/json-patch+json"
+		} else if len(setPairs) > 0 || len(unsetFields) > 0 || len(addPairs) > 0 || len(removePairs) > 0 {
+			// Shorthand patch - convert to JSON Merge Patch
+			patch := make(map[string]interface{})
+
+			// Process --set flags
+			for _, setPair := range setPairs {
+				parts := strings.SplitN(setPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --set format: %s (expected field=value)", setPair)
+				}
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --unset flags
+			for _, field := range unsetFields {
+				setNestedField(patch, field, nil)
+			}
+
+			// Process --add flags (add to arrays)
+			for _, addPair := range addPairs {
+				parts := strings.SplitN(addPair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --add format: %s (expected field=value)", addPair)
+				}
+				// For arrays, we'll use JSON Merge Patch append syntax if possible
+				// Otherwise convert to JSON Patch
+				setNestedField(patch, parts[0], parts[1])
+			}
+
+			// Process --remove flags
+			for _, removePair := range removePairs {
+				parts := strings.SplitN(removePair, "=", 2)
+				if len(parts) != 2 {
+					return fmt.Errorf("invalid --remove format: %s (expected field=value)", removePair)
+				}
+				// Remove operations are complex and might need JSON Patch
+				// For now, we'll handle simple cases
+				return fmt.Errorf("--remove operations require --json-patch format")
+			}
+
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal shorthand patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		} else if specPatch != "" {
+			// JSON Merge Patch from --spec
+			patchData = []byte(specPatch)
+			contentType = "application/merge-patch+json"
+		} else {
+			// Read from stdin (default to JSON Merge Patch)
+			decoder := json.NewDecoder(os.Stdin)
+			var patch interface{}
+			if err := decoder.Decode(&patch); err != nil {
+				return fmt.Errorf("failed to decode patch from stdin: %w", err)
+			}
+			patchBytes, err := json.Marshal(patch)
+			if err != nil {
+				return fmt.Errorf("failed to marshal patch: %w", err)
+			}
+			patchData = patchBytes
+			contentType = "application/merge-patch+json"
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		item, err := c.PatchServiceEndpoint(ctx, uid, patchData, contentType)
+		if err != nil {
+			return fmt.Errorf("failed to patch ServiceEndpoint: %w", err)
+		}
+
+		return printOutput(item)
+	},
+}
+
+var serviceendpointDeleteCmd = &cobra.Command{
+	Use:   "delete [uid]",
+	Short: "Delete a ServiceEndpoint",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := getClient()
+		if err != nil {
+			return fmt.Errorf("failed to create client: %w", err)
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		if err := c.DeleteServiceEndpoint(ctx, args[0]); err != nil {
+			return fmt.Errorf("failed to delete ServiceEndpoint: %w", err)
+		}
+
+		fmt.Printf("ServiceEndpoint %s deleted successfully\n", args[0])
+		return nil
+	},
+}
+
+func init() {
+	serviceendpointCmd.AddCommand(serviceendpointListCmd)
+	serviceendpointCmd.AddCommand(serviceendpointGetCmd)
+	serviceendpointCmd.AddCommand(serviceendpointCreateCmd)
+	serviceendpointCmd.AddCommand(serviceendpointUpdateCmd)
+	serviceendpointCmd.AddCommand(serviceendpointPatchCmd)
+	serviceendpointCmd.AddCommand(serviceendpointDeleteCmd)
+
+	// Add spec flag for create and update commands
+	serviceendpointCreateCmd.Flags().String("spec", "", "ServiceEndpoint specification in JSON format")
+	serviceendpointUpdateCmd.Flags().String("spec", "", "ServiceEndpoint specification in JSON format")
+
+	// Add patch command flags
+	serviceendpointPatchCmd.Flags().String("spec", "", "JSON Merge Patch specification")
+	serviceendpointPatchCmd.Flags().String("json-patch", "", "JSON Patch operations (RFC 6902)")
+	serviceendpointPatchCmd.Flags().StringArray("set", nil, "Set field value using dot notation (field=value)")
+	serviceendpointPatchCmd.Flags().StringArray("unset", nil, "Unset field using dot notation")
+	serviceendpointPatchCmd.Flags().StringArray("add", nil, "Add value to array field (field=value)")
+	serviceendpointPatchCmd.Flags().StringArray("remove", nil, "Remove value from array field (field=value)")
 }
