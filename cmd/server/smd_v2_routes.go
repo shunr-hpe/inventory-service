@@ -73,4 +73,18 @@ func RegisterSmdV2Routes(r chi.Router) {
 			r.Delete("/", DeleteEthernetInterfaceSmdV2)
 		})
 	})
+	// Group routes
+	r.Route("/hsm/v2/groups", func(r chi.Router) {
+		r.Get("/", GetGroupsSmdV2)
+		r.Post("/", CreateGroupSmdV2)
+		r.Route("/{group_label}", func(r chi.Router) {
+			r.Get("/", GetGroupSmdV2)
+			r.Put("/", UpdateGroupSmdV2)
+			r.Delete("/", DeleteGroupSmdV2)
+			// GET /groups/{group_label}/members
+			// POST /groups/{group_label}/members
+			// PUT /groups/{group_label}/members
+			// DELETE /groups/{group_label}/members/{member_id}
+		})
+	})
 }
