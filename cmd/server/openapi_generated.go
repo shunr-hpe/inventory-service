@@ -23,9 +23,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3gen"
-	"github.com/user/smd2/pkg/resources/component"
 )
 
 // ServeOpenAPISpec returns the OpenAPI 3.0 specification
@@ -105,6 +105,11 @@ func GenerateOpenAPISpec() *openapi3.T {
 
 	// Register all resource paths
 	registerComponentPaths(spec)
+	registerComponentEndpointPaths(spec)
+	registerEthernetInterfacePaths(spec)
+	registerGroupPaths(spec)
+	registerRedfishEndpointPaths(spec)
+	registerServiceEndpointPaths(spec)
 
 	return spec
 }
@@ -112,7 +117,7 @@ func GenerateOpenAPISpec() *openapi3.T {
 // registerComponentPaths registers OpenAPI paths for Component resources
 func registerComponentPaths(spec *openapi3.T) {
 	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
-	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&component.Component{}, spec.Components.Schemas)
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.Component{}, spec.Components.Schemas)
 	spec.Components.Schemas["Component"] = resourceSchema
 
 	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateComponentRequest{}, spec.Components.Schemas)
@@ -258,6 +263,761 @@ func registerComponentPaths(spec *openapi3.T) {
 	// Add paths to spec
 	spec.Paths.Set("/components", collectionPath)
 	spec.Paths.Set("/components/{uid}", itemPath)
+}
+
+// registerComponentEndpointPaths registers OpenAPI paths for ComponentEndpoint resources
+func registerComponentEndpointPaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.ComponentEndpoint{}, spec.Components.Schemas)
+	spec.Components.Schemas["ComponentEndpoint"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateComponentEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateComponentEndpointRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateComponentEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateComponentEndpointRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List ComponentEndpoints operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listComponentEndpoints"
+	listOp.Summary = "List all ComponentEndpoint resources"
+	listOp.Description = "Returns a list of all ComponentEndpoint resources in the inventory"
+	listOp.Tags = []string{"ComponentEndpoint"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/ComponentEndpoint"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create ComponentEndpoint operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createComponentEndpoint"
+	createOp.Summary = "Create a new ComponentEndpoint resource"
+	createOp.Description = "Creates a new ComponentEndpoint resource with the provided specification"
+	createOp.Tags = []string{"ComponentEndpoint"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateComponentEndpointRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ComponentEndpoint",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get ComponentEndpoint operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getComponentEndpoint"
+	getOp.Summary = "Get a specific ComponentEndpoint resource"
+	getOp.Description = "Returns details of a specific ComponentEndpoint resource by UID"
+	getOp.Tags = []string{"ComponentEndpoint"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ComponentEndpoint",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update ComponentEndpoint operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateComponentEndpoint"
+	updateOp.Summary = "Update a ComponentEndpoint resource"
+	updateOp.Description = "Updates an existing ComponentEndpoint resource with new values"
+	updateOp.Tags = []string{"ComponentEndpoint"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateComponentEndpointRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ComponentEndpoint",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete ComponentEndpoint operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteComponentEndpoint"
+	deleteOp.Summary = "Delete a ComponentEndpoint resource"
+	deleteOp.Description = "Removes a ComponentEndpoint resource from the inventory"
+	deleteOp.Tags = []string{"ComponentEndpoint"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the ComponentEndpoint resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/componentendpoints", collectionPath)
+	spec.Paths.Set("/componentendpoints/{uid}", itemPath)
+}
+
+// registerEthernetInterfacePaths registers OpenAPI paths for EthernetInterface resources
+func registerEthernetInterfacePaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.EthernetInterface{}, spec.Components.Schemas)
+	spec.Components.Schemas["EthernetInterface"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateEthernetInterfaceRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateEthernetInterfaceRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateEthernetInterfaceRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateEthernetInterfaceRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List EthernetInterfaces operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listEthernetInterfaces"
+	listOp.Summary = "List all EthernetInterface resources"
+	listOp.Description = "Returns a list of all EthernetInterface resources in the inventory"
+	listOp.Tags = []string{"EthernetInterface"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/EthernetInterface"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create EthernetInterface operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createEthernetInterface"
+	createOp.Summary = "Create a new EthernetInterface resource"
+	createOp.Description = "Creates a new EthernetInterface resource with the provided specification"
+	createOp.Tags = []string{"EthernetInterface"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateEthernetInterfaceRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/EthernetInterface",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get EthernetInterface operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getEthernetInterface"
+	getOp.Summary = "Get a specific EthernetInterface resource"
+	getOp.Description = "Returns details of a specific EthernetInterface resource by UID"
+	getOp.Tags = []string{"EthernetInterface"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/EthernetInterface",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update EthernetInterface operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateEthernetInterface"
+	updateOp.Summary = "Update a EthernetInterface resource"
+	updateOp.Description = "Updates an existing EthernetInterface resource with new values"
+	updateOp.Tags = []string{"EthernetInterface"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateEthernetInterfaceRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/EthernetInterface",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete EthernetInterface operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteEthernetInterface"
+	deleteOp.Summary = "Delete a EthernetInterface resource"
+	deleteOp.Description = "Removes a EthernetInterface resource from the inventory"
+	deleteOp.Tags = []string{"EthernetInterface"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the EthernetInterface resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/ethernetinterfaces", collectionPath)
+	spec.Paths.Set("/ethernetinterfaces/{uid}", itemPath)
+}
+
+// registerGroupPaths registers OpenAPI paths for Group resources
+func registerGroupPaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.Group{}, spec.Components.Schemas)
+	spec.Components.Schemas["Group"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateGroupRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateGroupRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateGroupRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateGroupRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List Groups operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listGroups"
+	listOp.Summary = "List all Group resources"
+	listOp.Description = "Returns a list of all Group resources in the inventory"
+	listOp.Tags = []string{"Group"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/Group"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create Group operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createGroup"
+	createOp.Summary = "Create a new Group resource"
+	createOp.Description = "Creates a new Group resource with the provided specification"
+	createOp.Tags = []string{"Group"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateGroupRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Group",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get Group operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getGroup"
+	getOp.Summary = "Get a specific Group resource"
+	getOp.Description = "Returns details of a specific Group resource by UID"
+	getOp.Tags = []string{"Group"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Group",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update Group operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateGroup"
+	updateOp.Summary = "Update a Group resource"
+	updateOp.Description = "Updates an existing Group resource with new values"
+	updateOp.Tags = []string{"Group"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateGroupRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/Group",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete Group operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteGroup"
+	deleteOp.Summary = "Delete a Group resource"
+	deleteOp.Description = "Removes a Group resource from the inventory"
+	deleteOp.Tags = []string{"Group"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the Group resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/groups", collectionPath)
+	spec.Paths.Set("/groups/{uid}", itemPath)
+}
+
+// registerRedfishEndpointPaths registers OpenAPI paths for RedfishEndpoint resources
+func registerRedfishEndpointPaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.RedfishEndpoint{}, spec.Components.Schemas)
+	spec.Components.Schemas["RedfishEndpoint"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateRedfishEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateRedfishEndpointRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateRedfishEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateRedfishEndpointRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List RedfishEndpoints operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listRedfishEndpoints"
+	listOp.Summary = "List all RedfishEndpoint resources"
+	listOp.Description = "Returns a list of all RedfishEndpoint resources in the inventory"
+	listOp.Tags = []string{"RedfishEndpoint"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/RedfishEndpoint"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create RedfishEndpoint operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createRedfishEndpoint"
+	createOp.Summary = "Create a new RedfishEndpoint resource"
+	createOp.Description = "Creates a new RedfishEndpoint resource with the provided specification"
+	createOp.Tags = []string{"RedfishEndpoint"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateRedfishEndpointRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/RedfishEndpoint",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get RedfishEndpoint operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getRedfishEndpoint"
+	getOp.Summary = "Get a specific RedfishEndpoint resource"
+	getOp.Description = "Returns details of a specific RedfishEndpoint resource by UID"
+	getOp.Tags = []string{"RedfishEndpoint"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/RedfishEndpoint",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update RedfishEndpoint operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateRedfishEndpoint"
+	updateOp.Summary = "Update a RedfishEndpoint resource"
+	updateOp.Description = "Updates an existing RedfishEndpoint resource with new values"
+	updateOp.Tags = []string{"RedfishEndpoint"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateRedfishEndpointRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/RedfishEndpoint",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete RedfishEndpoint operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteRedfishEndpoint"
+	deleteOp.Summary = "Delete a RedfishEndpoint resource"
+	deleteOp.Description = "Removes a RedfishEndpoint resource from the inventory"
+	deleteOp.Tags = []string{"RedfishEndpoint"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the RedfishEndpoint resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/redfishendpoints", collectionPath)
+	spec.Paths.Set("/redfishendpoints/{uid}", itemPath)
+}
+
+// registerServiceEndpointPaths registers OpenAPI paths for ServiceEndpoint resources
+func registerServiceEndpointPaths(spec *openapi3.T) {
+	// Generate schemas from Go types - NO ANNOTATIONS NEEDED
+	resourceSchema, _ := openapi3gen.NewSchemaRefForValue(&v1.ServiceEndpoint{}, spec.Components.Schemas)
+	spec.Components.Schemas["ServiceEndpoint"] = resourceSchema
+
+	createReqSchema, _ := openapi3gen.NewSchemaRefForValue(&CreateServiceEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["CreateServiceEndpointRequest"] = createReqSchema
+
+	updateReqSchema, _ := openapi3gen.NewSchemaRefForValue(&UpdateServiceEndpointRequest{}, spec.Components.Schemas)
+	spec.Components.Schemas["UpdateServiceEndpointRequest"] = updateReqSchema
+
+	// Error response schema
+	if _, exists := spec.Components.Schemas["ErrorResponse"]; !exists {
+		errorSchema := openapi3.NewObjectSchema().
+			WithProperty("error", openapi3.NewStringSchema()).
+			WithRequired([]string{"error"})
+		spec.Components.Schemas["ErrorResponse"] = &openapi3.SchemaRef{Value: errorSchema}
+	}
+
+	// DELETE response schema
+	if _, exists := spec.Components.Schemas["DeleteResponse"]; !exists {
+		deleteSchema, _ := openapi3gen.NewSchemaRefForValue(&DeleteResponse{}, spec.Components.Schemas)
+		spec.Components.Schemas["DeleteResponse"] = deleteSchema
+	}
+
+	// List ServiceEndpoints operation
+	listOp := openapi3.NewOperation()
+	listOp.OperationID = "listServiceEndpoints"
+	listOp.Summary = "List all ServiceEndpoint resources"
+	listOp.Description = "Returns a list of all ServiceEndpoint resources in the inventory"
+	listOp.Tags = []string{"ServiceEndpoint"}
+	listOp.Responses = openapi3.NewResponses()
+	arraySchema := openapi3.NewArraySchema()
+	arraySchema.Items = &openapi3.SchemaRef{Ref: "#/components/schemas/ServiceEndpoint"}
+	listOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{Value: arraySchema}),
+	})
+	listOp.Responses.Set("500", errorResponse())
+
+	// Create ServiceEndpoint operation
+	createOp := openapi3.NewOperation()
+	createOp.OperationID = "createServiceEndpoint"
+	createOp.Summary = "Create a new ServiceEndpoint resource"
+	createOp.Description = "Creates a new ServiceEndpoint resource with the provided specification"
+	createOp.Tags = []string{"ServiceEndpoint"}
+	createOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/CreateServiceEndpointRequest",
+			}),
+	}
+	createOp.Responses = openapi3.NewResponses()
+	createOp.Responses.Set("201", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource created successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ServiceEndpoint",
+			}),
+	})
+	createOp.Responses.Set("400", errorResponse())
+	createOp.Responses.Set("500", errorResponse())
+
+	// Get ServiceEndpoint operation
+	getOp := openapi3.NewOperation()
+	getOp.OperationID = "getServiceEndpoint"
+	getOp.Summary = "Get a specific ServiceEndpoint resource"
+	getOp.Description = "Returns details of a specific ServiceEndpoint resource by UID"
+	getOp.Tags = []string{"ServiceEndpoint"}
+	getOp.Responses = openapi3.NewResponses()
+	getOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Successful response").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ServiceEndpoint",
+			}),
+	})
+	getOp.Responses.Set("404", errorResponse())
+	getOp.Responses.Set("500", errorResponse())
+
+	// Update ServiceEndpoint operation
+	updateOp := openapi3.NewOperation()
+	updateOp.OperationID = "updateServiceEndpoint"
+	updateOp.Summary = "Update a ServiceEndpoint resource"
+	updateOp.Description = "Updates an existing ServiceEndpoint resource with new values"
+	updateOp.Tags = []string{"ServiceEndpoint"}
+	updateOp.RequestBody = &openapi3.RequestBodyRef{
+		Value: openapi3.NewRequestBody().
+			WithRequired(true).
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/UpdateServiceEndpointRequest",
+			}),
+	}
+	updateOp.Responses = openapi3.NewResponses()
+	updateOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource updated successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/ServiceEndpoint",
+			}),
+	})
+	updateOp.Responses.Set("400", errorResponse())
+	updateOp.Responses.Set("404", errorResponse())
+	updateOp.Responses.Set("500", errorResponse())
+
+	// Delete ServiceEndpoint operation
+	deleteOp := openapi3.NewOperation()
+	deleteOp.OperationID = "deleteServiceEndpoint"
+	deleteOp.Summary = "Delete a ServiceEndpoint resource"
+	deleteOp.Description = "Removes a ServiceEndpoint resource from the inventory"
+	deleteOp.Tags = []string{"ServiceEndpoint"}
+	deleteOp.Responses = openapi3.NewResponses()
+	deleteOp.Responses.Set("200", &openapi3.ResponseRef{
+		Value: openapi3.NewResponse().
+			WithDescription("Resource deleted successfully").
+			WithJSONSchemaRef(&openapi3.SchemaRef{
+				Ref: "#/components/schemas/DeleteResponse",
+			}),
+	})
+	deleteOp.Responses.Set("400", errorResponse())
+	deleteOp.Responses.Set("404", errorResponse())
+	deleteOp.Responses.Set("500", errorResponse())
+
+	// Create path items
+	collectionPath := &openapi3.PathItem{
+		Get:  listOp,
+		Post: createOp,
+	}
+
+	uidParam := openapi3.NewPathParameter("uid").
+		WithDescription("Unique identifier of the ServiceEndpoint resource").
+		WithRequired(true).
+		WithSchema(openapi3.NewStringSchema())
+
+	itemPath := &openapi3.PathItem{
+		Get:    getOp,
+		Put:    updateOp,
+		Delete: deleteOp,
+		Parameters: []*openapi3.ParameterRef{
+			{Value: uidParam},
+		},
+	}
+
+	// Add paths to spec
+	spec.Paths.Set("/serviceendpoints", collectionPath)
+	spec.Paths.Set("/serviceendpoints/{uid}", itemPath)
 }
 
 // Helper function for error responses

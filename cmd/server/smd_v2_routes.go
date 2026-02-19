@@ -1,4 +1,4 @@
-// Copyright © 2025 OpenCHAMI a Series of LF Projects, LLC
+// Copyright © 2025-2026 OpenCHAMI a Series of LF Projects, LLC
 //
 // SPDX-License-Identifier: MIT
 package main
@@ -35,5 +35,70 @@ func RegisterSmdV2Routes(r chi.Router) {
 		// Patch /State/Components/BulkSoftwareStatus
 		// Patch /State/Components/BulkRole
 		// Patch /State/Components/BulkNID
+	})
+	// ComponentEndpoint routes
+	r.Route("/hsm/v2/Inventory/ComponentEndpoints", func(r chi.Router) {
+		r.Get("/", GetComponentEndpointsSmdV2)
+		r.Post("/", CreateComponentEndpointSmdV2)
+		// todo (optional)
+		// DELETE /Inventory/ComponentEndpoints
+		// r.Delete("/", DeleteAllComponentSmdV2) // todo (smd has it but it is probably not needed)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetComponentEndpointSmdV2)
+			r.Put("/", UpdateComponentEndpointSmdV2)
+			r.Delete("/", DeleteComponentEndpointSmdV2)
+		})
+	})
+	// ServiceEndpoint routes
+	r.Route("/hsm/v2/Inventory/ServiceEndpoints", func(r chi.Router) {
+		r.Get("/", GetServiceEndpointsSmdV2)
+		r.Post("/", CreateServiceEndpointSmdV2)
+		// todo (optional)
+		// DELETE /Inventory/ServiceEndpoints
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetServiceEndpointSmdV2)
+			r.Put("/", UpdateServiceEndpointSmdV2)
+			r.Delete("/", DeleteServiceEndpointSmdV2)
+			// GET /ServiceEndpoints/{id}/RedfishEndpoints/{redfish_endpoint_id}
+			// DELETE /ServiceEndpoints/{id}/RedfishEndpoints/{redfish_endpoint_id}
+		})
+	})
+	// RedfishEndpoint routes
+	r.Route("/hsm/v2/Inventory/RedfishEndpoints", func(r chi.Router) {
+		r.Get("/", GetRedfishEndpointsSmdV2)
+		r.Post("/", CreateRedfishEndpointSmdV2)
+		// todo (optional)
+		// DELETE /Inventory/RedfishEndpoints
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetRedfishEndpointSmdV2)
+			r.Put("/", UpdateRedfishEndpointV2)
+			r.Delete("/", DeleteRedfishEndpointV2)
+		})
+	})
+	// EthernetInterface routes
+	r.Route("/hsm/v2/Inventory/EthernetInterfaces", func(r chi.Router) {
+		r.Get("/", GetEthernetInterfacesSmdV2)
+		r.Post("/", CreateEthernetInterfaceSmdV2)
+		// todo (optional)
+		// DELETE /Inventory/EthernetInterfaces
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", GetEthernetInterfaceSmdV2)
+			r.Put("/", UpdateEthernetInterfaceSmdV2)
+			r.Delete("/", DeleteEthernetInterfaceSmdV2)
+		})
+	})
+	// Group routes
+	r.Route("/hsm/v2/groups", func(r chi.Router) {
+		r.Get("/", GetGroupsSmdV2)
+		r.Post("/", CreateGroupSmdV2)
+		r.Route("/{group_label}", func(r chi.Router) {
+			r.Get("/", GetGroupSmdV2)
+			r.Put("/", UpdateGroupSmdV2)
+			r.Delete("/", DeleteGroupSmdV2)
+			// GET /groups/{group_label}/members
+			// POST /groups/{group_label}/members
+			// PUT /groups/{group_label}/members
+			// DELETE /groups/{group_label}/members/{member_id}
+		})
 	})
 }

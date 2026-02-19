@@ -16,8 +16,11 @@ RUN useradd -m smd
 
 WORKDIR /home/smd
 
-COPY bin/smd2 /usr/local/bin/smd2
+
+COPY bin/smd2-server /usr/local/bin/smd2-server
 
 USER smd
 
-ENTRYPOINT ["/usr/local/bin/smd2"]
+RUN mkdir -p data
+
+ENTRYPOINT ["/usr/local/bin/smd2-server", "serve", "--database-url", "file:data/smd2.db?_fk=1"]

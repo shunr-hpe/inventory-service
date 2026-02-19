@@ -61,7 +61,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/user/smd2/pkg/resources/component"
+	"github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
 )
 
 // Client provides access to the inventory API
@@ -211,8 +211,8 @@ func (c *Client) doPatchRequest(ctx context.Context, endpoint string, patchData 
 }
 
 // GetComponents retrieves all components
-func (c *Client) GetComponents(ctx context.Context) ([]component.Component, error) {
-	var response []component.Component
+func (c *Client) GetComponents(ctx context.Context) ([]v1.Component, error) {
+	var response []v1.Component
 	if err := c.doRequest(ctx, "GET", "/components", nil, &response); err != nil {
 		return nil, err
 	}
@@ -220,8 +220,8 @@ func (c *Client) GetComponents(ctx context.Context) ([]component.Component, erro
 }
 
 // GetComponent retrieves a specific Component by UID
-func (c *Client) GetComponent(ctx context.Context, uid string) (*component.Component, error) {
-	var result component.Component
+func (c *Client) GetComponent(ctx context.Context, uid string) (*v1.Component, error) {
+	var result v1.Component
 	endpoint := fmt.Sprintf("/components/%s", uid)
 	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
 		return nil, err
@@ -230,8 +230,8 @@ func (c *Client) GetComponent(ctx context.Context, uid string) (*component.Compo
 }
 
 // CreateComponent creates a new Component
-func (c *Client) CreateComponent(ctx context.Context, req CreateComponentRequest) (*component.Component, error) {
-	var result component.Component
+func (c *Client) CreateComponent(ctx context.Context, req CreateComponentRequest) (*v1.Component, error) {
+	var result v1.Component
 	if err := c.doRequest(ctx, "POST", "/components", req, &result); err != nil {
 		return nil, err
 	}
@@ -239,8 +239,8 @@ func (c *Client) CreateComponent(ctx context.Context, req CreateComponentRequest
 }
 
 // UpdateComponent updates an existing Component
-func (c *Client) UpdateComponent(ctx context.Context, uid string, req UpdateComponentRequest) (*component.Component, error) {
-	var result component.Component
+func (c *Client) UpdateComponent(ctx context.Context, uid string, req UpdateComponentRequest) (*v1.Component, error) {
+	var result v1.Component
 	endpoint := fmt.Sprintf("/components/%s", uid)
 	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
 		return nil, err
@@ -249,8 +249,8 @@ func (c *Client) UpdateComponent(ctx context.Context, uid string, req UpdateComp
 }
 
 // PatchComponent patches an existing Component spec with the specified patch data and content type
-func (c *Client) PatchComponent(ctx context.Context, uid string, patchData []byte, contentType string) (*component.Component, error) {
-	var result component.Component
+func (c *Client) PatchComponent(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Component, error) {
+	var result v1.Component
 	endpoint := fmt.Sprintf("/components/%s", uid)
 	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
 		return nil, err
@@ -261,8 +261,8 @@ func (c *Client) PatchComponent(ctx context.Context, uid string, patchData []byt
 // UpdateComponentStatus updates only the status of an existing Component
 // This method is intended for controllers, reconcilers, and monitoring systems.
 // It preserves the spec and only updates the status portion of the resource.
-func (c *Client) UpdateComponentStatus(ctx context.Context, uid string, status component.ComponentStatus) (*component.Component, error) {
-	var result component.Component
+func (c *Client) UpdateComponentStatus(ctx context.Context, uid string, status v1.ComponentStatus) (*v1.Component, error) {
+	var result v1.Component
 	endpoint := fmt.Sprintf("/components/%s/status", uid)
 	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
 		return nil, err
@@ -272,14 +272,14 @@ func (c *Client) UpdateComponentStatus(ctx context.Context, uid string, status c
 
 // PatchComponentStatus patches only the status of an existing Component
 // Supports JSON Merge Patch by default. Use PatchComponentStatusWithType for other patch formats.
-func (c *Client) PatchComponentStatus(ctx context.Context, uid string, patchData []byte) (*component.Component, error) {
+func (c *Client) PatchComponentStatus(ctx context.Context, uid string, patchData []byte) (*v1.Component, error) {
 	return c.PatchComponentStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
 }
 
 // PatchComponentStatusWithType patches status with a specific patch content type
 // Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
-func (c *Client) PatchComponentStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*component.Component, error) {
-	var result component.Component
+func (c *Client) PatchComponentStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Component, error) {
+	var result v1.Component
 	endpoint := fmt.Sprintf("/components/%s/status", uid)
 	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
 		return nil, err
@@ -290,6 +290,441 @@ func (c *Client) PatchComponentStatusWithType(ctx context.Context, uid string, p
 // DeleteComponent deletes a Component by UID
 func (c *Client) DeleteComponent(ctx context.Context, uid string) error {
 	endpoint := fmt.Sprintf("/components/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetComponentEndpoints retrieves all componentendpoints
+func (c *Client) GetComponentEndpoints(ctx context.Context) ([]v1.ComponentEndpoint, error) {
+	var response []v1.ComponentEndpoint
+	if err := c.doRequest(ctx, "GET", "/componentendpoints", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetComponentEndpoint retrieves a specific ComponentEndpoint by UID
+func (c *Client) GetComponentEndpoint(ctx context.Context, uid string) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	endpoint := fmt.Sprintf("/componentendpoints/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateComponentEndpoint creates a new ComponentEndpoint
+func (c *Client) CreateComponentEndpoint(ctx context.Context, req CreateComponentEndpointRequest) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	if err := c.doRequest(ctx, "POST", "/componentendpoints", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateComponentEndpoint updates an existing ComponentEndpoint
+func (c *Client) UpdateComponentEndpoint(ctx context.Context, uid string, req UpdateComponentEndpointRequest) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	endpoint := fmt.Sprintf("/componentendpoints/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchComponentEndpoint patches an existing ComponentEndpoint spec with the specified patch data and content type
+func (c *Client) PatchComponentEndpoint(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	endpoint := fmt.Sprintf("/componentendpoints/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateComponentEndpointStatus updates only the status of an existing ComponentEndpoint
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateComponentEndpointStatus(ctx context.Context, uid string, status v1.ComponentEndpointStatus) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	endpoint := fmt.Sprintf("/componentendpoints/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchComponentEndpointStatus patches only the status of an existing ComponentEndpoint
+// Supports JSON Merge Patch by default. Use PatchComponentEndpointStatusWithType for other patch formats.
+func (c *Client) PatchComponentEndpointStatus(ctx context.Context, uid string, patchData []byte) (*v1.ComponentEndpoint, error) {
+	return c.PatchComponentEndpointStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchComponentEndpointStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchComponentEndpointStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.ComponentEndpoint, error) {
+	var result v1.ComponentEndpoint
+	endpoint := fmt.Sprintf("/componentendpoints/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteComponentEndpoint deletes a ComponentEndpoint by UID
+func (c *Client) DeleteComponentEndpoint(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/componentendpoints/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetEthernetInterfaces retrieves all ethernetinterfaces
+func (c *Client) GetEthernetInterfaces(ctx context.Context) ([]v1.EthernetInterface, error) {
+	var response []v1.EthernetInterface
+	if err := c.doRequest(ctx, "GET", "/ethernetinterfaces", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetEthernetInterface retrieves a specific EthernetInterface by UID
+func (c *Client) GetEthernetInterface(ctx context.Context, uid string) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateEthernetInterface creates a new EthernetInterface
+func (c *Client) CreateEthernetInterface(ctx context.Context, req CreateEthernetInterfaceRequest) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	if err := c.doRequest(ctx, "POST", "/ethernetinterfaces", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateEthernetInterface updates an existing EthernetInterface
+func (c *Client) UpdateEthernetInterface(ctx context.Context, uid string, req UpdateEthernetInterfaceRequest) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchEthernetInterface patches an existing EthernetInterface spec with the specified patch data and content type
+func (c *Client) PatchEthernetInterface(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateEthernetInterfaceStatus updates only the status of an existing EthernetInterface
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateEthernetInterfaceStatus(ctx context.Context, uid string, status v1.EthernetInterfaceStatus) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchEthernetInterfaceStatus patches only the status of an existing EthernetInterface
+// Supports JSON Merge Patch by default. Use PatchEthernetInterfaceStatusWithType for other patch formats.
+func (c *Client) PatchEthernetInterfaceStatus(ctx context.Context, uid string, patchData []byte) (*v1.EthernetInterface, error) {
+	return c.PatchEthernetInterfaceStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchEthernetInterfaceStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchEthernetInterfaceStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.EthernetInterface, error) {
+	var result v1.EthernetInterface
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteEthernetInterface deletes a EthernetInterface by UID
+func (c *Client) DeleteEthernetInterface(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/ethernetinterfaces/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetGroups retrieves all groups
+func (c *Client) GetGroups(ctx context.Context) ([]v1.Group, error) {
+	var response []v1.Group
+	if err := c.doRequest(ctx, "GET", "/groups", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetGroup retrieves a specific Group by UID
+func (c *Client) GetGroup(ctx context.Context, uid string) (*v1.Group, error) {
+	var result v1.Group
+	endpoint := fmt.Sprintf("/groups/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateGroup creates a new Group
+func (c *Client) CreateGroup(ctx context.Context, req CreateGroupRequest) (*v1.Group, error) {
+	var result v1.Group
+	if err := c.doRequest(ctx, "POST", "/groups", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateGroup updates an existing Group
+func (c *Client) UpdateGroup(ctx context.Context, uid string, req UpdateGroupRequest) (*v1.Group, error) {
+	var result v1.Group
+	endpoint := fmt.Sprintf("/groups/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchGroup patches an existing Group spec with the specified patch data and content type
+func (c *Client) PatchGroup(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Group, error) {
+	var result v1.Group
+	endpoint := fmt.Sprintf("/groups/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateGroupStatus updates only the status of an existing Group
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateGroupStatus(ctx context.Context, uid string, status v1.GroupStatus) (*v1.Group, error) {
+	var result v1.Group
+	endpoint := fmt.Sprintf("/groups/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchGroupStatus patches only the status of an existing Group
+// Supports JSON Merge Patch by default. Use PatchGroupStatusWithType for other patch formats.
+func (c *Client) PatchGroupStatus(ctx context.Context, uid string, patchData []byte) (*v1.Group, error) {
+	return c.PatchGroupStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchGroupStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchGroupStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.Group, error) {
+	var result v1.Group
+	endpoint := fmt.Sprintf("/groups/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteGroup deletes a Group by UID
+func (c *Client) DeleteGroup(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/groups/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetRedfishEndpoints retrieves all redfishendpoints
+func (c *Client) GetRedfishEndpoints(ctx context.Context) ([]v1.RedfishEndpoint, error) {
+	var response []v1.RedfishEndpoint
+	if err := c.doRequest(ctx, "GET", "/redfishendpoints", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetRedfishEndpoint retrieves a specific RedfishEndpoint by UID
+func (c *Client) GetRedfishEndpoint(ctx context.Context, uid string) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	endpoint := fmt.Sprintf("/redfishendpoints/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateRedfishEndpoint creates a new RedfishEndpoint
+func (c *Client) CreateRedfishEndpoint(ctx context.Context, req CreateRedfishEndpointRequest) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	if err := c.doRequest(ctx, "POST", "/redfishendpoints", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateRedfishEndpoint updates an existing RedfishEndpoint
+func (c *Client) UpdateRedfishEndpoint(ctx context.Context, uid string, req UpdateRedfishEndpointRequest) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	endpoint := fmt.Sprintf("/redfishendpoints/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchRedfishEndpoint patches an existing RedfishEndpoint spec with the specified patch data and content type
+func (c *Client) PatchRedfishEndpoint(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	endpoint := fmt.Sprintf("/redfishendpoints/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateRedfishEndpointStatus updates only the status of an existing RedfishEndpoint
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateRedfishEndpointStatus(ctx context.Context, uid string, status v1.RedfishEndpointStatus) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	endpoint := fmt.Sprintf("/redfishendpoints/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchRedfishEndpointStatus patches only the status of an existing RedfishEndpoint
+// Supports JSON Merge Patch by default. Use PatchRedfishEndpointStatusWithType for other patch formats.
+func (c *Client) PatchRedfishEndpointStatus(ctx context.Context, uid string, patchData []byte) (*v1.RedfishEndpoint, error) {
+	return c.PatchRedfishEndpointStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchRedfishEndpointStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchRedfishEndpointStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.RedfishEndpoint, error) {
+	var result v1.RedfishEndpoint
+	endpoint := fmt.Sprintf("/redfishendpoints/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteRedfishEndpoint deletes a RedfishEndpoint by UID
+func (c *Client) DeleteRedfishEndpoint(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/redfishendpoints/%s", uid)
+	var response DeleteResponse
+	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetServiceEndpoints retrieves all serviceendpoints
+func (c *Client) GetServiceEndpoints(ctx context.Context) ([]v1.ServiceEndpoint, error) {
+	var response []v1.ServiceEndpoint
+	if err := c.doRequest(ctx, "GET", "/serviceendpoints", nil, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+// GetServiceEndpoint retrieves a specific ServiceEndpoint by UID
+func (c *Client) GetServiceEndpoint(ctx context.Context, uid string) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	endpoint := fmt.Sprintf("/serviceendpoints/%s", uid)
+	if err := c.doRequest(ctx, "GET", endpoint, nil, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// CreateServiceEndpoint creates a new ServiceEndpoint
+func (c *Client) CreateServiceEndpoint(ctx context.Context, req CreateServiceEndpointRequest) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	if err := c.doRequest(ctx, "POST", "/serviceendpoints", req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateServiceEndpoint updates an existing ServiceEndpoint
+func (c *Client) UpdateServiceEndpoint(ctx context.Context, uid string, req UpdateServiceEndpointRequest) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	endpoint := fmt.Sprintf("/serviceendpoints/%s", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, req, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchServiceEndpoint patches an existing ServiceEndpoint spec with the specified patch data and content type
+func (c *Client) PatchServiceEndpoint(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	endpoint := fmt.Sprintf("/serviceendpoints/%s", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// UpdateServiceEndpointStatus updates only the status of an existing ServiceEndpoint
+// This method is intended for controllers, reconcilers, and monitoring systems.
+// It preserves the spec and only updates the status portion of the resource.
+func (c *Client) UpdateServiceEndpointStatus(ctx context.Context, uid string, status v1.ServiceEndpointStatus) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	endpoint := fmt.Sprintf("/serviceendpoints/%s/status", uid)
+	if err := c.doRequest(ctx, "PUT", endpoint, status, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// PatchServiceEndpointStatus patches only the status of an existing ServiceEndpoint
+// Supports JSON Merge Patch by default. Use PatchServiceEndpointStatusWithType for other patch formats.
+func (c *Client) PatchServiceEndpointStatus(ctx context.Context, uid string, patchData []byte) (*v1.ServiceEndpoint, error) {
+	return c.PatchServiceEndpointStatusWithType(ctx, uid, patchData, "application/merge-patch+json")
+}
+
+// PatchServiceEndpointStatusWithType patches status with a specific patch content type
+// Supported types: application/merge-patch+json, application/json-patch+json, application/fabrica-patch+json
+func (c *Client) PatchServiceEndpointStatusWithType(ctx context.Context, uid string, patchData []byte, contentType string) (*v1.ServiceEndpoint, error) {
+	var result v1.ServiceEndpoint
+	endpoint := fmt.Sprintf("/serviceendpoints/%s/status", uid)
+	if err := c.doPatchRequest(ctx, endpoint, patchData, contentType, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// DeleteServiceEndpoint deletes a ServiceEndpoint by UID
+func (c *Client) DeleteServiceEndpoint(ctx context.Context, uid string) error {
+	endpoint := fmt.Sprintf("/serviceendpoints/%s", uid)
 	var response DeleteResponse
 	if err := c.doRequest(ctx, "DELETE", endpoint, nil, &response); err != nil {
 		return err
