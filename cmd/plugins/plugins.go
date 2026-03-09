@@ -50,4 +50,6 @@ type Storage interface {
 	LoadEthernetInterfaceByID(ctx context.Context, id string) (*v1.EthernetInterface, error)
 	LoadServiceEndpointByID(ctx context.Context, id string) (*v1.ServiceEndpoint, error)
 	LoadGroupByLabel(ctx context.Context, label string) (*v1.Group, error)
+
+	StorageExtras
 }
