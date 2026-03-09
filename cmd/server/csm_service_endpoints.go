@@ -11,7 +11,7 @@ import (
 	"time"
 
 	v1 "github.com/OpenCHAMI/smd2/apis/smd2.openchami.org/v1"
-	"github.com/OpenCHAMI/smd2/internal/storage"
+	"github.com/OpenCHAMI/smd2/cmd/plugins"
 	"github.com/go-chi/chi/v5"
 	"github.com/openchami/fabrica/pkg/events"
 	"github.com/openchami/fabrica/pkg/resource"
@@ -21,7 +21,7 @@ import (
 
 // GetServiceEndpointsCsm returns all ServiceEndpoint resources
 func GetServiceEndpointsCsm(w http.ResponseWriter, r *http.Request) {
-	serviceEndpoints, err := storage.LoadAllServiceEndpoints(r.Context())
+	serviceEndpoints, err := plugins.Store.LoadAllServiceEndpoints(r.Context())
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoints: %w", err))
 		return
@@ -43,7 +43,7 @@ func GetServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
+	serviceEndpoint, err := plugins.Store.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
@@ -101,7 +101,7 @@ func CreateServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Save (Layer 1: Ent validation happens automatically if using Ent storage)
-		if err := storage.SaveServiceEndpoint(r.Context(), serviceEndpoint); err != nil {
+		if err := plugins.Store.SaveServiceEndpoint(r.Context(), serviceEndpoint); err != nil {
 			respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to save ServiceEndpoint: %w", err))
 			return
 		}
@@ -125,7 +125,7 @@ func UpdateServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
+	serviceEndpoint, err := plugins.Store.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
@@ -154,7 +154,7 @@ func UpdateServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 
 	serviceEndpoint.Metadata.UpdatedAt = time.Now()
 
-	if err := storage.SaveServiceEndpoint(r.Context(), serviceEndpoint); err != nil {
+	if err := plugins.Store.SaveServiceEndpoint(r.Context(), serviceEndpoint); err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to save ServiceEndpoint: %w", err))
 		return
 	}
@@ -178,7 +178,7 @@ func DeleteServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	serviceEndpoint, err := storage.LoadServiceEndpointByID(r.Context(), id)
+	serviceEndpoint, err := plugins.Store.LoadServiceEndpointByID(r.Context(), id)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to load serviceendpoint %s: %w", id, err))
 		return
@@ -186,7 +186,7 @@ func DeleteServiceEndpointCsm(w http.ResponseWriter, r *http.Request) {
 
 	if serviceEndpoint != nil {
 		uid := serviceEndpoint.GetUID()
-		if err := storage.DeleteServiceEndpoint(r.Context(), uid); err != nil {
+		if err := plugins.Store.DeleteServiceEndpoint(r.Context(), uid); err != nil {
 			respondError(w, http.StatusInternalServerError, fmt.Errorf("failed to delete ServiceEndpoint: %w", err))
 			return
 		}
