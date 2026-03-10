@@ -25,6 +25,7 @@ import (
 func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string]string, map[string]string, error) {
 	// Type assertion to get Resource fields
 	var apiVersion, kind, name, uid string
+	var alternateID string
 	var spec, status json.RawMessage
 	var labels, annotations map[string]string
 	var createdAt, updatedAt time.Time
@@ -36,6 +37,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -57,6 +59,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -78,6 +81,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -99,6 +103,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -120,6 +125,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -141,6 +147,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		alternateID = v.AlternateID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -174,6 +181,10 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 
 	if len(status) > 0 && string(status) != "null" {
 		create = create.SetStatus(status)
+	}
+
+	if alternateID != "" {
+		create = create.SetAlternateID(alternateID)
 	}
 
 	return create, labels, annotations, nil

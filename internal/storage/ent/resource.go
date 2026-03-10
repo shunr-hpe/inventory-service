@@ -40,6 +40,8 @@ type Resource struct {
 	ResourceVersion string `json:"resource_version,omitempty"`
 	// Namespace for multi-tenancy
 	Namespace string `json:"namespace,omitempty"`
+	// Alternate identifier for cross-referencing with external systems
+	AlternateID string `json:"alternate_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ResourceQuery when eager-loading is set.
 	Edges        ResourceEdges `json:"edges"`
@@ -84,7 +86,7 @@ func (*Resource) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case resource.FieldID:
 			values[i] = new(sql.NullInt64)
-		case resource.FieldUID, resource.FieldName, resource.FieldAPIVersion, resource.FieldKind, resource.FieldResourceType, resource.FieldResourceVersion, resource.FieldNamespace:
+		case resource.FieldUID, resource.FieldName, resource.FieldAPIVersion, resource.FieldKind, resource.FieldResourceType, resource.FieldResourceVersion, resource.FieldNamespace, resource.FieldAlternateID:
 			values[i] = new(sql.NullString)
 		case resource.FieldCreatedAt, resource.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -179,6 +181,12 @@ func (_m *Resource) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Namespace = value.String
 			}
+		case resource.FieldAlternateID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field alternate_id", values[i])
+			} else if value.Valid {
+				_m.AlternateID = value.String
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -257,6 +265,9 @@ func (_m *Resource) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("namespace=")
 	builder.WriteString(_m.Namespace)
+	builder.WriteString(", ")
+	builder.WriteString("alternate_id=")
+	builder.WriteString(_m.AlternateID)
 	builder.WriteByte(')')
 	return builder.String()
 }

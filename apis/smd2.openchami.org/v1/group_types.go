@@ -7,11 +7,12 @@ import (
 )
 
 type Group struct {
-	APIVersion string           `json:"apiVersion"`
-	Kind       string           `json:"kind"`
-	Metadata   fabrica.Metadata `json:"metadata"`
-	Spec       GroupSpec        `json:"spec" validate:"required"`
-	Status     GroupStatus      `json:"status,omitempty"`
+	APIVersion  string           `json:"apiVersion"`
+	Kind        string           `json:"kind"`
+	Metadata    fabrica.Metadata `json:"metadata"`
+	AlternateID string           `json:"alternateID,omitempty"`
+	Spec        GroupSpec        `json:"spec" validate:"required"`
+	Status      GroupStatus      `json:"status,omitempty"`
 }
 
 type GroupSpec struct {

@@ -100,6 +100,11 @@ func Namespace(v string) predicate.Resource {
 	return predicate.Resource(sql.FieldEQ(FieldNamespace, v))
 }
 
+// AlternateID applies equality check predicate on the "alternate_id" field. It's identical to AlternateIDEQ.
+func AlternateID(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldEQ(FieldAlternateID, v))
+}
+
 // UIDEQ applies the EQ predicate on the "uid" field.
 func UIDEQ(v string) predicate.Resource {
 	return predicate.Resource(sql.FieldEQ(FieldUID, v))
@@ -653,6 +658,81 @@ func NamespaceEqualFold(v string) predicate.Resource {
 // NamespaceContainsFold applies the ContainsFold predicate on the "namespace" field.
 func NamespaceContainsFold(v string) predicate.Resource {
 	return predicate.Resource(sql.FieldContainsFold(FieldNamespace, v))
+}
+
+// AlternateIDEQ applies the EQ predicate on the "alternate_id" field.
+func AlternateIDEQ(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldEQ(FieldAlternateID, v))
+}
+
+// AlternateIDNEQ applies the NEQ predicate on the "alternate_id" field.
+func AlternateIDNEQ(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldNEQ(FieldAlternateID, v))
+}
+
+// AlternateIDIn applies the In predicate on the "alternate_id" field.
+func AlternateIDIn(vs ...string) predicate.Resource {
+	return predicate.Resource(sql.FieldIn(FieldAlternateID, vs...))
+}
+
+// AlternateIDNotIn applies the NotIn predicate on the "alternate_id" field.
+func AlternateIDNotIn(vs ...string) predicate.Resource {
+	return predicate.Resource(sql.FieldNotIn(FieldAlternateID, vs...))
+}
+
+// AlternateIDGT applies the GT predicate on the "alternate_id" field.
+func AlternateIDGT(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldGT(FieldAlternateID, v))
+}
+
+// AlternateIDGTE applies the GTE predicate on the "alternate_id" field.
+func AlternateIDGTE(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldGTE(FieldAlternateID, v))
+}
+
+// AlternateIDLT applies the LT predicate on the "alternate_id" field.
+func AlternateIDLT(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldLT(FieldAlternateID, v))
+}
+
+// AlternateIDLTE applies the LTE predicate on the "alternate_id" field.
+func AlternateIDLTE(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldLTE(FieldAlternateID, v))
+}
+
+// AlternateIDContains applies the Contains predicate on the "alternate_id" field.
+func AlternateIDContains(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldContains(FieldAlternateID, v))
+}
+
+// AlternateIDHasPrefix applies the HasPrefix predicate on the "alternate_id" field.
+func AlternateIDHasPrefix(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldHasPrefix(FieldAlternateID, v))
+}
+
+// AlternateIDHasSuffix applies the HasSuffix predicate on the "alternate_id" field.
+func AlternateIDHasSuffix(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldHasSuffix(FieldAlternateID, v))
+}
+
+// AlternateIDIsNil applies the IsNil predicate on the "alternate_id" field.
+func AlternateIDIsNil() predicate.Resource {
+	return predicate.Resource(sql.FieldIsNull(FieldAlternateID))
+}
+
+// AlternateIDNotNil applies the NotNil predicate on the "alternate_id" field.
+func AlternateIDNotNil() predicate.Resource {
+	return predicate.Resource(sql.FieldNotNull(FieldAlternateID))
+}
+
+// AlternateIDEqualFold applies the EqualFold predicate on the "alternate_id" field.
+func AlternateIDEqualFold(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldEqualFold(FieldAlternateID, v))
+}
+
+// AlternateIDContainsFold applies the ContainsFold predicate on the "alternate_id" field.
+func AlternateIDContainsFold(v string) predicate.Resource {
+	return predicate.Resource(sql.FieldContainsFold(FieldAlternateID, v))
 }
 
 // HasLabels applies the HasEdge predicate on the "labels" edge.

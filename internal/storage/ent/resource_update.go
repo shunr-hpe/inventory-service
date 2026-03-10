@@ -158,6 +158,26 @@ func (_u *ResourceUpdate) ClearNamespace() *ResourceUpdate {
 	return _u
 }
 
+// SetAlternateID sets the "alternate_id" field.
+func (_u *ResourceUpdate) SetAlternateID(v string) *ResourceUpdate {
+	_u.mutation.SetAlternateID(v)
+	return _u
+}
+
+// SetNillableAlternateID sets the "alternate_id" field if the given value is not nil.
+func (_u *ResourceUpdate) SetNillableAlternateID(v *string) *ResourceUpdate {
+	if v != nil {
+		_u.SetAlternateID(*v)
+	}
+	return _u
+}
+
+// ClearAlternateID clears the value of the "alternate_id" field.
+func (_u *ResourceUpdate) ClearAlternateID() *ResourceUpdate {
+	_u.mutation.ClearAlternateID()
+	return _u
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by IDs.
 func (_u *ResourceUpdate) AddLabelIDs(ids ...int) *ResourceUpdate {
 	_u.mutation.AddLabelIDs(ids...)
@@ -345,6 +365,12 @@ func (_u *ResourceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.NamespaceCleared() {
 		_spec.ClearField(resource.FieldNamespace, field.TypeString)
+	}
+	if value, ok := _u.mutation.AlternateID(); ok {
+		_spec.SetField(resource.FieldAlternateID, field.TypeString, value)
+	}
+	if _u.mutation.AlternateIDCleared() {
+		_spec.ClearField(resource.FieldAlternateID, field.TypeString)
 	}
 	if _u.mutation.LabelsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -582,6 +608,26 @@ func (_u *ResourceUpdateOne) ClearNamespace() *ResourceUpdateOne {
 	return _u
 }
 
+// SetAlternateID sets the "alternate_id" field.
+func (_u *ResourceUpdateOne) SetAlternateID(v string) *ResourceUpdateOne {
+	_u.mutation.SetAlternateID(v)
+	return _u
+}
+
+// SetNillableAlternateID sets the "alternate_id" field if the given value is not nil.
+func (_u *ResourceUpdateOne) SetNillableAlternateID(v *string) *ResourceUpdateOne {
+	if v != nil {
+		_u.SetAlternateID(*v)
+	}
+	return _u
+}
+
+// ClearAlternateID clears the value of the "alternate_id" field.
+func (_u *ResourceUpdateOne) ClearAlternateID() *ResourceUpdateOne {
+	_u.mutation.ClearAlternateID()
+	return _u
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by IDs.
 func (_u *ResourceUpdateOne) AddLabelIDs(ids ...int) *ResourceUpdateOne {
 	_u.mutation.AddLabelIDs(ids...)
@@ -799,6 +845,12 @@ func (_u *ResourceUpdateOne) sqlSave(ctx context.Context) (_node *Resource, err 
 	}
 	if _u.mutation.NamespaceCleared() {
 		_spec.ClearField(resource.FieldNamespace, field.TypeString)
+	}
+	if value, ok := _u.mutation.AlternateID(); ok {
+		_spec.SetField(resource.FieldAlternateID, field.TypeString, value)
+	}
+	if _u.mutation.AlternateIDCleared() {
+		_spec.ClearField(resource.FieldAlternateID, field.TypeString)
 	}
 	if _u.mutation.LabelsCleared() {
 		edge := &sqlgraph.EdgeSpec{

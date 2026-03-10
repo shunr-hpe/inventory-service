@@ -945,6 +945,7 @@ type ResourceMutation struct {
 	updated_at         *time.Time
 	resource_version   *string
 	namespace          *string
+	alternate_id       *string
 	clearedFields      map[string]struct{}
 	labels             map[int]struct{}
 	removedlabels      map[int]struct{}
@@ -1508,6 +1509,55 @@ func (m *ResourceMutation) ResetNamespace() {
 	delete(m.clearedFields, resource.FieldNamespace)
 }
 
+// SetAlternateID sets the "alternate_id" field.
+func (m *ResourceMutation) SetAlternateID(s string) {
+	m.alternate_id = &s
+}
+
+// AlternateID returns the value of the "alternate_id" field in the mutation.
+func (m *ResourceMutation) AlternateID() (r string, exists bool) {
+	v := m.alternate_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAlternateID returns the old "alternate_id" field's value of the Resource entity.
+// If the Resource object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ResourceMutation) OldAlternateID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAlternateID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAlternateID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAlternateID: %w", err)
+	}
+	return oldValue.AlternateID, nil
+}
+
+// ClearAlternateID clears the value of the "alternate_id" field.
+func (m *ResourceMutation) ClearAlternateID() {
+	m.alternate_id = nil
+	m.clearedFields[resource.FieldAlternateID] = struct{}{}
+}
+
+// AlternateIDCleared returns if the "alternate_id" field was cleared in this mutation.
+func (m *ResourceMutation) AlternateIDCleared() bool {
+	_, ok := m.clearedFields[resource.FieldAlternateID]
+	return ok
+}
+
+// ResetAlternateID resets all changes to the "alternate_id" field.
+func (m *ResourceMutation) ResetAlternateID() {
+	m.alternate_id = nil
+	delete(m.clearedFields, resource.FieldAlternateID)
+}
+
 // AddLabelIDs adds the "labels" edge to the Label entity by ids.
 func (m *ResourceMutation) AddLabelIDs(ids ...int) {
 	if m.labels == nil {
@@ -1650,7 +1700,7 @@ func (m *ResourceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ResourceMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.uid != nil {
 		fields = append(fields, resource.FieldUID)
 	}
@@ -1684,6 +1734,9 @@ func (m *ResourceMutation) Fields() []string {
 	if m.namespace != nil {
 		fields = append(fields, resource.FieldNamespace)
 	}
+	if m.alternate_id != nil {
+		fields = append(fields, resource.FieldAlternateID)
+	}
 	return fields
 }
 
@@ -1714,6 +1767,8 @@ func (m *ResourceMutation) Field(name string) (ent.Value, bool) {
 		return m.ResourceVersion()
 	case resource.FieldNamespace:
 		return m.Namespace()
+	case resource.FieldAlternateID:
+		return m.AlternateID()
 	}
 	return nil, false
 }
@@ -1745,6 +1800,8 @@ func (m *ResourceMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldResourceVersion(ctx)
 	case resource.FieldNamespace:
 		return m.OldNamespace(ctx)
+	case resource.FieldAlternateID:
+		return m.OldAlternateID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Resource field %s", name)
 }
@@ -1831,6 +1888,13 @@ func (m *ResourceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetNamespace(v)
 		return nil
+	case resource.FieldAlternateID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAlternateID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Resource field %s", name)
 }
@@ -1867,6 +1931,9 @@ func (m *ResourceMutation) ClearedFields() []string {
 	if m.FieldCleared(resource.FieldNamespace) {
 		fields = append(fields, resource.FieldNamespace)
 	}
+	if m.FieldCleared(resource.FieldAlternateID) {
+		fields = append(fields, resource.FieldAlternateID)
+	}
 	return fields
 }
 
@@ -1886,6 +1953,9 @@ func (m *ResourceMutation) ClearField(name string) error {
 		return nil
 	case resource.FieldNamespace:
 		m.ClearNamespace()
+		return nil
+	case resource.FieldAlternateID:
+		m.ClearAlternateID()
 		return nil
 	}
 	return fmt.Errorf("unknown Resource nullable field %s", name)
@@ -1927,6 +1997,9 @@ func (m *ResourceMutation) ResetField(name string) error {
 		return nil
 	case resource.FieldNamespace:
 		m.ResetNamespace()
+		return nil
+	case resource.FieldAlternateID:
+		m.ResetAlternateID()
 		return nil
 	}
 	return fmt.Errorf("unknown Resource field %s", name)

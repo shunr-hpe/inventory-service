@@ -8,11 +8,12 @@ import (
 )
 
 type Component struct {
-	APIVersion string           `json:"apiVersion"`
-	Kind       string           `json:"kind"`
-	Metadata   fabrica.Metadata `json:"metadata"`
-	Spec       ComponentSpec    `json:"spec" validate:"required"`
-	Status     ComponentStatus  `json:"status,omitempty"`
+	APIVersion  string           `json:"apiVersion"`
+	Kind        string           `json:"kind"`
+	Metadata    fabrica.Metadata `json:"metadata"`
+	AlternateID string           `json:"alternateID,omitempty"`
+	Spec        ComponentSpec    `json:"spec" validate:"required"`
+	Status      ComponentStatus  `json:"status,omitempty"`
 }
 
 type ComponentSpec struct {
