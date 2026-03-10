@@ -93,7 +93,7 @@ var (
 			},
 			{
 				Name:    "resource_resource_type_name",
-				Unique:  true,
+				Unique:  false,
 				Columns: []*schema.Column{ResourcesColumns[5], ResourcesColumns[2]},
 			},
 			{

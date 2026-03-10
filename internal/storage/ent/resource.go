@@ -40,7 +40,7 @@ type Resource struct {
 	ResourceVersion string `json:"resource_version,omitempty"`
 	// Namespace for multi-tenancy
 	Namespace string `json:"namespace,omitempty"`
-	// Alternate identifier for cross-referencing with external systems
+	// Alternate identifier that matches ID in the Spec
 	AlternateID string `json:"alternate_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ResourceQuery when eager-loading is set.
