@@ -200,6 +200,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
@@ -243,6 +244,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
@@ -286,6 +288,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
@@ -329,6 +332,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
@@ -372,6 +376,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
@@ -415,6 +420,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,
