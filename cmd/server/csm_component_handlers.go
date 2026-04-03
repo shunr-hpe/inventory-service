@@ -19,6 +19,20 @@ import (
 	"github.com/openchami/fabrica/pkg/versioning"
 )
 
+func GetReadinessCsm(w http.ResponseWriter, r *http.Request) {
+
+	health := v1.ServiceReadiness{
+		Code:    0,
+		Message: "The service is healthy",
+	}
+	respondJSON(w, http.StatusOK, health)
+}
+
+func GetLivenessCsm(w http.ResponseWriter, r *http.Request) {
+
+	respondJSON(w, http.StatusNoContent, nil)
+}
+
 // GetComponents returns all Component resources
 func GetComponentsCsm(w http.ResponseWriter, r *http.Request) {
 	// Authorization: Add custom middleware in routes.go or implement checks here

@@ -5,7 +5,26 @@ package main
 
 import "github.com/go-chi/chi/v5"
 
-func RegisterCsmRoutes(r chi.Router) {
+func RegisterUnprotectedCsmRoutes(r chi.Router) {
+	r.Route("/hsm/v2/service/ready", func(r chi.Router) {
+		r.Get("/", GetReadinessCsm)
+	})
+	r.Route("/hsm/v2/service/liveness", func(r chi.Router) {
+		r.Get("/", GetLivenessCsm)
+	})
+	// other smd routes
+	// Get /hsm/v2/service/values
+	// Get /hsm/v2/service/values/arch
+	// Get /hsm/v2/service/values/class
+	// Get /hsm/v2/service/values/flag
+	// Get /hsm/v2/service/values/nettype
+	// Get /hsm/v2/service/values/role
+	// Get /hsm/v2/service/values/subrole
+	// Get /hsm/v2/service/values/state
+	// Get /hsm/v2/service/values/type
+}
+
+func RegisterProtectedCsmRoutes(r chi.Router) {
 
 	// Component routes
 	r.Route("/hsm/v2/State/Components", func(r chi.Router) {
@@ -17,7 +36,7 @@ func RegisterCsmRoutes(r chi.Router) {
 			r.Put("/", UpdateComponentCsm)
 			r.Delete("/", DeleteComponentCsm)
 		})
-		// possible todo
+		// other smd routes
 		// Get /State/Components/ByNID/{nid}
 		// Get /State/Components/Query/{xname}
 		// Post /State/Components/Query
