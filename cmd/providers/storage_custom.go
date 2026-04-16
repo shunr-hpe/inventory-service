@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-package controllers
+package providers
 
 import (
 	"context"

@@ -18,8 +18,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/OpenCHAMI/inventory-service/cmd/controllers"
 	"github.com/OpenCHAMI/inventory-service/cmd/plugins"
+	"github.com/OpenCHAMI/inventory-service/cmd/providers"
 	_ "github.com/OpenCHAMI/inventory-service/pkg/apiversion"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -123,7 +123,7 @@ func init() {
 	rootCmd.AddCommand(newExportCommand())
 	rootCmd.AddCommand(newImportCommand())
 
-	plugins.Store = &controllers.EntStorage{}
+	plugins.Store = &providers.EntStorage{}
 }
 
 func initConfig() {
