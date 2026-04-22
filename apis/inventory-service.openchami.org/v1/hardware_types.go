@@ -16,6 +16,7 @@ type Hardware struct {
 	APIVersion string           `json:"apiVersion"`
 	Kind       string           `json:"kind"`
 	Metadata   fabrica.Metadata `json:"metadata"`
+	ID         string           `json:"id,omitempty"`
 	Spec       HardwareSpec     `json:"spec" validate:"required"`
 	Status     HardwareStatus   `json:"status,omitempty"`
 }

@@ -1,4 +1,4 @@
-// Copyright © 2025-2026 OpenCHAMI a Series of LF Projects, LLC
+// Copyright © <no value> OpenCHAMI a Series of LF Projects, LLC
 //
 // SPDX-License-Identifier: MIT
 //
@@ -35,7 +35,7 @@ package client
 import (
 	"github.com/openchami/fabrica/pkg/fabrica"
 
-	v1 "github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
+	"github.com/OpenCHAMI/inventory-service/apis/inventory-service.openchami.org/v1"
 )
 
 // CreateComponentRequest represents a request to create a Component
@@ -98,6 +98,22 @@ type CreateGroupRequest struct {
 type UpdateGroupRequest struct {
 	Metadata    fabrica.Metadata  `json:"metadata,omitempty"`
 	Spec        v1.GroupSpec      `json:"spec,omitempty" validate:"omitempty"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// CreateHardwareRequest represents a request to create a Hardware
+type CreateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata" validate:"required"`
+	Spec        v1.HardwareSpec   `json:"spec" validate:"required"`
+	Labels      map[string]string `json:"labels,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+}
+
+// UpdateHardwareRequest represents a request to update a Hardware
+type UpdateHardwareRequest struct {
+	Metadata    fabrica.Metadata  `json:"metadata,omitempty"`
+	Spec        v1.HardwareSpec   `json:"spec,omitempty" validate:"omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
