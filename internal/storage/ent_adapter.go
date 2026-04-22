@@ -125,6 +125,7 @@ func ToEntResource(fabricaResource interface{}) (*ent.ResourceCreate, map[string
 		kind = v.Kind
 		name = v.Metadata.Name
 		uid = v.Metadata.UID
+		resourceID = v.ID
 		labels = v.Metadata.Labels
 		annotations = v.Metadata.Annotations
 		createdAt = v.Metadata.CreatedAt
@@ -397,6 +398,7 @@ func FromEntResource(ctx context.Context, entResource *ent.Resource) (interface{
 
 			APIVersion: entResource.APIVersion,
 			Kind:       entResource.Kind,
+			ID:         entResource.ResourceID,
 			Metadata: fabrica.Metadata{
 				Name:        entResource.Name,
 				UID:         entResource.UID,

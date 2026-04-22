@@ -706,6 +706,9 @@ func SaveHardware(ctx context.Context, resource *v1.Hardware) error {
 		return fmt.Errorf("ent client not initialized")
 	}
 
+	// Derive resource_id from Spec.ID (xname), matching the pattern used by other resource types
+	resource.ID = resource.Spec.ID
+
 	// Convert to Ent entity
 	createBuilder, labels, annotations, err := ToEntResource(resource)
 	if err != nil {
@@ -733,13 +736,20 @@ func SaveHardware(ctx context.Context, resource *v1.Hardware) error {
 		spec, _ := json.Marshal(resource.Spec)
 		status, _ := json.Marshal(resource.Status)
 
-		savedResource, err = entClient.Resource.UpdateOne(entResource).
+		updateOp := entClient.Resource.UpdateOne(entResource).
 			SetName(resource.Metadata.Name).
 			SetAPIVersion(resource.APIVersion).
 			SetSpec(spec).
 			SetStatus(status).
-			SetUpdatedAt(time.Now()).
-			Save(ctx)
+			SetUpdatedAt(time.Now())
+
+		if resource.ID != "" {
+			updateOp = updateOp.SetResourceID(resource.ID)
+		} else {
+			updateOp = updateOp.ClearResourceID()
+		}
+
+		savedResource, err = updateOp.Save(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to update Hardware: %w", err)
 		}
