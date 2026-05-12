@@ -1,36 +1,57 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://inventory-service.openchami.org/schemas/group_schema.json",
-  "title": "GroupSpec",
+  "title": "Group",
   "type": "object",
-  "required": ["label"],
+  "required": ["spec"],
   "properties": {
-    "description": {
+    "apiVersion": {
       "type": "string"
     },
-    "label": {
-      "type": "string",
-      "minLength": 1
-    },
-    "exclusiveGroup": {
+    "kind": {
       "type": "string"
     },
-    "tags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "metadata": {
+      "type": "object"
     },
-    "members": {
+    "id": {
+      "type": "string"
+    },
+    "spec": {
       "type": "object",
+      "required": ["label"],
       "properties": {
-        "ids": {
+        "description": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exclusiveGroup": {
+          "type": "string"
+        },
+        "tags": {
           "type": "array",
           "items": {
             "type": "string"
           }
+        },
+        "members": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
+    },
+    "status": {
+      "type": "object"
     }
   }
 }

@@ -1,75 +1,96 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://inventory-service.openchami.org/schemas/redfish_endpoint_schema.json",
-  "title": "RedfishEndpointSpec",
+  "title": "RedfishEndpoint",
   "type": "object",
-  "required": ["ID"],
+  "required": ["spec"],
   "properties": {
-    "description": {
+    "apiVersion": {
       "type": "string"
     },
-    "ID": {
-      "type": "string",
-      "minLength": 1
-    },
-    "Type": {
+    "kind": {
       "type": "string"
     },
-    "Name": {
+    "metadata": {
+      "type": "object"
+    },
+    "id": {
       "type": "string"
     },
-    "Hostname": {
-      "type": "string"
-    },
-    "Domain": {
-      "type": "string"
-    },
-    "FQDN": {
-      "type": "string"
-    },
-    "Enabled": {
-      "type": "boolean"
-    },
-    "UUID": {
-      "type": "string"
-    },
-    "User": {
-      "type": "string"
-    },
-    "Password": {
-      "type": "string"
-    },
-    "UseSSDP": {
-      "type": "boolean"
-    },
-    "MACRequired": {
-      "type": "boolean"
-    },
-    "MACAddr": {
-      "type": "string"
-    },
-    "IPAddress": {
-      "type": "string"
-    },
-    "RediscoverOnUpdate": {
-      "type": "boolean"
-    },
-    "TemplateID": {
-      "type": "string"
-    },
-    "DiscoveryInfo": {
+    "spec": {
       "type": "object",
+      "required": ["ID"],
       "properties": {
-        "LastDiscoveryAttempt": {
+        "description": {
           "type": "string"
         },
-        "LastDiscoveryStatus": {
+        "ID": {
+          "type": "string",
+          "minLength": 1
+        },
+        "Type": {
           "type": "string"
         },
-        "RedfishVersion": {
+        "Name": {
           "type": "string"
+        },
+        "Hostname": {
+          "type": "string"
+        },
+        "Domain": {
+          "type": "string"
+        },
+        "FQDN": {
+          "type": "string"
+        },
+        "Enabled": {
+          "type": "boolean"
+        },
+        "UUID": {
+          "type": "string"
+        },
+        "User": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "UseSSDP": {
+          "type": "boolean"
+        },
+        "MACRequired": {
+          "type": "boolean"
+        },
+        "MACAddr": {
+          "type": "string"
+        },
+        "IPAddress": {
+          "type": "string"
+        },
+        "RediscoverOnUpdate": {
+          "type": "boolean"
+        },
+        "TemplateID": {
+          "type": "string"
+        },
+        "DiscoveryInfo": {
+          "type": "object",
+          "properties": {
+            "LastDiscoveryAttempt": {
+              "type": "string"
+            },
+            "LastDiscoveryStatus": {
+              "type": "string"
+            },
+            "RedfishVersion": {
+              "type": "string"
+            }
+          }
         }
       }
+    },
+    "status": {
+      "type": "object"
     }
   }
 }

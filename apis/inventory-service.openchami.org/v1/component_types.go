@@ -58,14 +58,14 @@ func (r *Component) Validate(ctx context.Context) error {
 		return fmt.Errorf("resolving component schema: %w", err)
 	}
 
-	specJSON, err := json.Marshal(r.Spec)
+	resourceJSON, err := json.Marshal(r)
 	if err != nil {
-		return fmt.Errorf("marshaling spec for validation: %w", err)
+		return fmt.Errorf("marshaling resource for validation: %w", err)
 	}
 
 	var instance any
-	if err := json.Unmarshal(specJSON, &instance); err != nil {
-		return fmt.Errorf("unmarshaling spec for validation: %w", err)
+	if err := json.Unmarshal(resourceJSON, &instance); err != nil {
+		return fmt.Errorf("unmarshaling resource for validation: %w", err)
 	}
 
 	return resolved.Validate(instance)
