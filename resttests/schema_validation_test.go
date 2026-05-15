@@ -3,19 +3,19 @@
  *
  * SPDX-License-Identifier: MIT
  *
- * Tests that POST requests violating the schemas in schemas/*.json are rejected
+ * Tests that POST requests violating the schemas in schemas/default/*.json are rejected
  * with a 4xx response.  One block per resource type, covering:
  *   - missing top-level "spec" (required by all schemas)
  *   - missing required field inside spec
  *   - empty string for a field with minLength: 1
  *
  * Endpoints under test (non-CSM generic routes):
- *   POST /components          — schemas/components_schema.json
- *   POST /ethernetinterfaces  — schemas/ethernet_interface_schema.json
- *   POST /groups              — schemas/group_schema.json
- *   POST /hardwares           — schemas/hardware_schema.json
- *   POST /redfishendpoints    — schemas/redfish_endpoint_schema.json
- *   POST /serviceendpoints    — schemas/service_endpoint_schema.json
+ *   POST /components          — schemas/default/components_schema.json
+ *   POST /ethernetinterfaces  — schemas/default/ethernet_interface_schema.json
+ *   POST /groups              — schemas/default/group_schema.json
+ *   POST /hardwares           — schemas/default/hardware_schema.json
+ *   POST /redfishendpoints    — schemas/default/redfish_endpoint_schema.json
+ *   POST /serviceendpoints    — schemas/default/service_endpoint_schema.json
  */
 
 package resttests
@@ -37,7 +37,7 @@ func assertSchemaError(t *testing.T, path string, body interface{}) {
 }
 
 // ─── Component (/components) ──────────────────────────────────────────────────
-// Schema: schemas/components_schema.json
+// Schema: schemas/default/components_schema.json
 // Constraints: "spec" required; spec.ID required, minLength 1.
 
 // TestCreateComponent_SchemaViolation_MissingSpec verifies that omitting "spec"
@@ -73,7 +73,7 @@ func TestCreateComponent_SchemaViolation_EmptyID(t *testing.T) {
 }
 
 // ─── EthernetInterface (/ethernetinterfaces) ──────────────────────────────────
-// Schema: schemas/ethernet_interface_schema.json
+// Schema: schemas/default/ethernet_interface_schema.json
 // Constraints: "spec" required; spec.ID required, minLength 1.
 
 // TestCreateEthernetInterface_SchemaViolation_MissingSpec verifies that omitting
@@ -108,7 +108,7 @@ func TestCreateEthernetInterface_SchemaViolation_EmptyID(t *testing.T) {
 }
 
 // ─── Group (/groups) ──────────────────────────────────────────────────────────
-// Schema: schemas/group_schema.json
+// Schema: schemas/default/group_schema.json
 // Constraints: "spec" required; spec.label required, minLength 1.
 
 // TestCreateGroup_SchemaViolation_MissingSpec verifies that omitting "spec"
@@ -143,7 +143,7 @@ func TestCreateGroup_SchemaViolation_EmptyLabel(t *testing.T) {
 }
 
 // ─── Hardware (/hardwares) ────────────────────────────────────────────────────
-// Schema: schemas/hardware_schema.json
+// Schema: schemas/default/hardware_schema.json
 // Constraints: "spec" required; spec.ID required, minLength 1.
 
 // TestCreateHardware_SchemaViolation_MissingSpec verifies that omitting "spec"
@@ -179,7 +179,7 @@ func TestCreateHardware_SchemaViolation_EmptyID(t *testing.T) {
 }
 
 // ─── RedfishEndpoint (/redfishendpoints) ──────────────────────────────────────
-// Schema: schemas/redfish_endpoint_schema.json
+// Schema: schemas/default/redfish_endpoint_schema.json
 // Constraints: "spec" required; spec.ID required, minLength 1.
 
 // TestCreateRedfishEndpoint_SchemaViolation_MissingSpec verifies that omitting
@@ -216,7 +216,7 @@ func TestCreateRedfishEndpoint_SchemaViolation_EmptyID(t *testing.T) {
 }
 
 // ─── ServiceEndpoint (/serviceendpoints) ─────────────────────────────────────
-// Schema: schemas/service_endpoint_schema.json
+// Schema: schemas/default/service_endpoint_schema.json
 // Constraints: "spec" required; spec.RedfishEndpointID and spec.RedfishType
 // are both required, each with minLength 1.
 
